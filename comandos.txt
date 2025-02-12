@@ -1,0 +1,43 @@
+# Primeiro vamos inserir alguns tipos de pet
+INSERT INTO tipo_pet (id=1, descricao=Cachorro);
+INSERT INTO tipo_pet (id=2, descricao=Gato);
+INSERT INTO tipo_pet (id=3, descricao=Peixe);
+INSERT INTO tipo_pet (id=4, descricao=Ave);
+
+# Listar tipos de pet ordenados por descrição
+SELECT * FROM tipo_pet ORDER BY descricao;
+
+# Agora vamos inserir algumas pessoas
+INSERT INTO pessoas (id=1, nome=Carlos Silva, cpf=123.456.789-00, idade=25);
+INSERT INTO pessoas (id=2, nome=Ana Maria, cpf=987.654.321-00, idade=30);
+INSERT INTO pessoas (id=3, nome=Bruno Costa, cpf=456.789.123-00, idade=28);
+INSERT INTO pessoas (id=4, nome=Diana Santos, cpf=789.123.456-00, idade=22);
+
+# Listar pessoas ordenadas por nome
+SELECT * FROM pessoas ORDER BY nome;
+
+# Agora vamos cadastrar alguns pets
+INSERT INTO pet (id=1, nome=Rex, id_tipo=1, id_pessoa=1);
+INSERT INTO pet (id=2, nome=Luna, id_tipo=2, id_pessoa=2);
+INSERT INTO pet (id=3, nome=Bob, id_tipo=1, id_pessoa=3);
+INSERT INTO pet (id=4, nome=Nemo, id_tipo=3, id_pessoa=4);
+INSERT INTO pet (id=5, nome=Max, id_tipo=1, id_pessoa=1);
+
+# Listar todos os pets ordenados por nome
+SELECT * FROM pet ORDER BY nome;
+
+# Testar atualizações
+UPDATE pessoas SET idade=31 WHERE id=2;
+UPDATE pet SET nome=Maxx WHERE id=5;
+
+# Listar novamente para ver as alterações
+SELECT * FROM pessoas ORDER BY nome;
+SELECT * FROM pet ORDER BY nome;
+
+# Testar remoções
+DELETE FROM pet WHERE id=4;
+DELETE FROM pessoas WHERE id=4;
+
+# Listar novamente para confirmar remoções
+SELECT * FROM pessoas ORDER BY nome;
+SELECT * FROM pet ORDER BY nome;
