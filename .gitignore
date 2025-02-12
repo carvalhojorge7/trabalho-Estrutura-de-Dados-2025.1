@@ -1,0 +1,21 @@
+# Executáveis
+*.exe
+programa
+programa2
+
+# Arquivos binários
+*.bin
+
+# Arquivos de objeto e bibliotecas
+*.o
+*.a
+*.lib
+
+# Arquivos temporários
+*.tmp
+*~
+
+# Arquivos de IDE/Editor
+.vscode/
+.vs/
+*.swp

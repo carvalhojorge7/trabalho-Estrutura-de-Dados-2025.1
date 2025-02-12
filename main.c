@@ -1,21 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 #include "estruturas.h"
 #include "comandos.h"
 
 #define MAX_COMANDO 500
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Erro: Uso correto: %s <arquivo_comandos>\n", argv[0]);
-        return 1;
-    }
+int main() {
+    // Configura o locale para português do Brasil
+    setlocale(LC_ALL,"");
+    
+    char nome_arquivo[100];
+    
+    printf("Digite o nome do arquivo de comandos (ex: comandos.txt): ");
+    scanf("%s", nome_arquivo);
+    
+    // Limpa o buffer do teclado
+    while (getchar() != '\n');
 
     // Abre o arquivo de comandos
-    FILE *arquivo = fopen(argv[1], "r");
+    FILE *arquivo = fopen(nome_arquivo, "r");
     if (!arquivo) {
-        printf("Erro: Não foi possível abrir o arquivo %s\n", argv[1]);
+        printf("\nERRO: Nao foi possivel abrir o arquivo %s\n", nome_arquivo);
+        printf("Verifique se o arquivo existe e se o nome esta correto.\n\n");
+        system("pause");
         return 1;
     }
 
@@ -109,8 +118,9 @@ int main(int argc, char *argv[]) {
         free(p);
     }
 
-    printf("\nPressione ENTER para sair...");
-    getchar();
+    printf("\nProcessamento concluido!\n");
+    printf("Pressione qualquer tecla para sair...");
+    system("pause");
 
     return 0;
 }

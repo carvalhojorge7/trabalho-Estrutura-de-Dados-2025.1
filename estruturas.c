@@ -238,47 +238,55 @@ int comparar_nomes(void *a, void *b, int tipo) {
 }
 
 void inserir_na_arvore(NoArvore **raiz, void *dados, int tipo) {
-    if (!*raiz) {
+    if (*raiz == NULL) {
         *raiz = (NoArvore*)malloc(sizeof(NoArvore));
         (*raiz)->dados = dados;
-        (*raiz)->esq = (*raiz)->dir = NULL;
+        (*raiz)->esq = NULL;
+        (*raiz)->dir = NULL;
         return;
     }
     
-    int cmp = comparar_nomes(dados, (*raiz)->dados, tipo);
-    if (cmp < 0)
+    int comp;
+    if (tipo == 1) {  // Pessoa
+        comp = strcmp(((Pessoa*)dados)->nome, ((Pessoa*)(*raiz)->dados)->nome);
+    }
+    else if (tipo == 2) {  // Pet
+        comp = strcmp(((Pet*)dados)->nome, ((Pet*)(*raiz)->dados)->nome);
+    }
+    else {  // TipoPet
+        comp = strcmp(((TipoPet*)dados)->nome, ((TipoPet*)(*raiz)->dados)->nome);
+    }
+    
+    if (comp < 0) {
         inserir_na_arvore(&(*raiz)->esq, dados, tipo);
-    else
+    }
+    else {
         inserir_na_arvore(&(*raiz)->dir, dados, tipo);
+    }
 }
 
 void exibir_dados(void *dados, int tipo) {
-    switch (tipo) {
-        case 1: { // Pessoa
-            Pessoa *p = (Pessoa*)dados;
-            printf("Código: %d, Nome: %s, Fone: %s, Endereço: %s, Data Nasc.: %s\n",
-                   p->codigo, p->nome, p->fone, p->endereco, p->data_nasc);
-            break;
-        }
-        case 2: { // Pet
-            Pet *p = (Pet*)dados;
-            printf("Código: %d, Nome: %s, Código Tipo: %d, Código Pessoa: %d\n",
-                   p->codigo, p->nome, p->codigo_tipo, p->codigo_pes);
-            break;
-        }
-        case 3: { // TipoPet
-            TipoPet *t = (TipoPet*)dados;
-            printf("Código: %d, Nome: %s\n",
-                   t->codigo, t->nome);
-            break;
-        }
+    if (tipo == 1) {  // Pessoa
+        Pessoa *p = (Pessoa*)dados;
+        printf("Codigo: %d, Nome: %s, Fone: %s, Endereco: %s, Data Nasc.: %s\n",
+               p->codigo, p->nome, p->fone, p->endereco, p->data_nasc);
+    }
+    else if (tipo == 2) {  // Pet
+        Pet *p = (Pet*)dados;
+        printf("Codigo: %d, Nome: %s, Codigo Tipo: %d, Codigo Pessoa: %d\n",
+               p->codigo, p->nome, p->codigo_tipo, p->codigo_pes);
+    }
+    else if (tipo == 3) {  // TipoPet
+        TipoPet *t = (TipoPet*)dados;
+        printf("Codigo: %d, Nome: %s\n",
+               t->codigo, t->nome);
     }
 }
 
 void exibir_arvore_ordenada(NoArvore *raiz, int tipo) {
-    if (!raiz) return;
-    
-    exibir_arvore_ordenada(raiz->esq, tipo);
-    exibir_dados(raiz->dados, tipo);
-    exibir_arvore_ordenada(raiz->dir, tipo);
+    if (raiz != NULL) {
+        exibir_arvore_ordenada(raiz->esq, tipo);
+        exibir_dados(raiz->dados, tipo);
+        exibir_arvore_ordenada(raiz->dir, tipo);
+    }
 }
