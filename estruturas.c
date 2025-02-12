@@ -227,8 +227,8 @@ int comparar_nomes(void *a, void *b, int tipo) {
             nome_b = ((Pet*)b)->nome;
             break;
         case 3: // TipoPet
-            nome_a = ((TipoPet*)a)->descricao;
-            nome_b = ((TipoPet*)b)->descricao;
+            nome_a = ((TipoPet*)a)->nome;
+            nome_b = ((TipoPet*)b)->nome;
             break;
         default:
             return 0;

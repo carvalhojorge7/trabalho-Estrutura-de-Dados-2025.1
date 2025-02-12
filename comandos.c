@@ -162,7 +162,7 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
 // Processamento de comandos para Pet
 void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pessoas, TipoPet *lista_tipos) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
-        int codigo_pessoa = extrair_id_ref(comando, "codigo_pessoa");
+        int codigo_pessoa = extrair_id_ref(comando, "codigo_pes");
         int codigo_tipo = extrair_id_ref(comando, "codigo_tipo");
         
         // Verifica integridade referencial
@@ -179,7 +179,7 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
         novo->codigo = extrair_id(comando);
         strcpy(novo->nome, extrair_campo(comando, "nome"));
         novo->codigo_tipo = codigo_tipo;
-        novo->codigo_pessoa = codigo_pessoa;
+        novo->codigo_pes = codigo_pessoa;
         
         // Inserir no início da lista
         novo->prox = *lista;
@@ -187,7 +187,8 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
         if (*lista) (*lista)->ant = novo;
         *lista = novo;
         
-        printf("Pet inserido com sucesso!\n");
+        // Salvar no arquivo
+        salvar_pets(*lista);
     }
     else if (strncasecmp(comando, "SELECT", 6) == 0) {
         // Verifica se tem ORDER BY
@@ -211,8 +212,8 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
             // Exibir normal
             Pet *p = *lista;
             while (p) {
-                printf("Código: %d, Nome: %s, Código_Tipo: %d, Código_Pessoa: %d\n",
-                       p->codigo, p->nome, p->codigo_tipo, p->codigo_pessoa);
+                printf("Código: %d, Nome: %s, Código Tipo: %d, Código Pessoa: %d\n",
+                       p->codigo, p->nome, p->codigo_tipo, p->codigo_pes);
                 p = p->prox;
             }
         }
@@ -225,7 +226,7 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
             if (p->codigo == codigo) {
                 char *nome = extrair_campo(comando, "nome");
                 char *codigo_tipo = extrair_campo(comando, "codigo_tipo");
-                char *codigo_pessoa = extrair_campo(comando, "codigo_pessoa");
+                char *codigo_pes = extrair_campo(comando, "codigo_pes");
                 
                 if (nome) strcpy(p->nome, nome);
                 if (codigo_tipo) {
@@ -236,16 +237,17 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
                         printf("Erro: Tipo de pet não encontrado!\n");
                     }
                 }
-                if (codigo_pessoa) {
-                    int novo_codigo_pessoa = atoi(codigo_pessoa);
-                    if (verificar_registro_existe(lista_pessoas, novo_codigo_pessoa, 1)) {
-                        p->codigo_pessoa = novo_codigo_pessoa;
+                if (codigo_pes) {
+                    int novo_codigo_pes = atoi(codigo_pes);
+                    if (verificar_registro_existe(lista_pessoas, novo_codigo_pes, 1)) {
+                        p->codigo_pes = novo_codigo_pes;
                     } else {
                         printf("Erro: Pessoa não encontrada!\n");
                     }
                 }
                 
-                printf("Pet atualizado com sucesso!\n");
+                // Salvar no arquivo
+                salvar_pets(*lista);
                 break;
             }
             p = p->prox;
@@ -260,11 +262,13 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
                 // Ajusta ponteiros
                 if (p->ant) p->ant->prox = p->prox;
                 else *lista = p->prox;
-                
                 if (p->prox) p->prox->ant = p->ant;
                 
+                // Libera memória
                 free(p);
-                printf("Pet removido com sucesso!\n");
+                
+                // Salvar no arquivo
+                salvar_pets(*lista);
                 break;
             }
             p = p->prox;
