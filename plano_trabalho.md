@@ -1,38 +1,29 @@
-# Plano de Trabalho Simplificado
+# Plano de Trabalho
 
-## 1. Estruturas de Dados Básicas
-- [ ] Criar structs para Pessoa, TipoPet e Pet
-- [ ] Criar struct para Fila de comandos
-- [ ] Criar struct para Árvore binária
+## Objetivo
+Desenvolver um interpretador de comandos SQL que lê instruções de um arquivo texto e manipula arquivos binários, suportando todas as operações CRUD (Create, Read, Update, Delete).
 
-## 2. Fila de Comandos
-- [ ] Implementar funções básicas da fila (criar, inserir, remover)
-- [ ] Criar função para validar comandos SQL
-- [ ] Criar funções para distribuir comandos em filas específicas (pessoa, pet, tipo_pet)
+## Etapas Concluídas
 
-## 3. Árvore Binária
-- [ ] Implementar funções básicas da árvore (criar, inserir, remover)
-- [ ] Implementar função de percurso em-ordem para ordenação
+### 1. Estruturas Básicas
+- [x] Definição da estrutura Registro (dados + tamanho)
+- [x] Definição das estruturas de fila para comandos
+- [x] Implementação das funções de manipulação da fila
 
-## 4. Processamento de Dados
-- [ ] Implementar leitura de comandos do arquivo/usuário
-- [ ] Implementar funções para executar cada tipo de comando (INSERT, UPDATE, DELETE, SELECT)
-- [ ] Implementar salvamento dos dados em arquivo
+### 2. Processamento de Comandos
+- [x] Leitura de arquivo .txt
+- [x] Parser para comandos SQL
+  - [x] INSERT (Create)
+  - [x] SELECT (Read)
+  - [x] UPDATE (Update)
+  - [x] DELETE (Delete)
+- [x] Extração de nome da tabela
+- [x] Extração de valores e condições
 
-## 5. Validações
-- [ ] Verificar códigos únicos
-- [ ] Verificar referências entre tabelas
-- [ ] Verificar campos obrigatórios
-- [ ] Tratar remoção de pessoa com pets
-
-## Ordem de Desenvolvimento
-1. Começar pelas estruturas básicas
-2. Implementar fila de comandos
-3. Implementar árvore para ordenação
-4. Desenvolver processamento dos comandos
-5. Adicionar validações
-
-## Observações
-- Manter o código simples e direto
-- Focar nas estruturas de dados (fila e árvore)
-- Implementar apenas o necessário para atender os requisitos
+### 3. Manipulação de Arquivos
+- [x] Criação de arquivos binários
+- [x] Salvamento de registros
+- [x] Formato binário otimizado (tamanho + dados + flag)
+- [x] Busca de registros por condição
+- [x] Atualização de registros existentes
+- [x] Remoção lógica de registros

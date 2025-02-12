@@ -1,32 +1,78 @@
-# Trabalho de Estrutura de Dados
+# Interpretador de Comandos SQL para Arquivos Binários
 
-**Instituição:** IFCE - Campus Fortaleza  
-**Disciplina:** Estrutura de Dados  
-**Professor:** Ajalmar Rocha Neto, Dr.  
-**Aluno:** Jorge Lucas Silva de Carvalho  
+Este projeto implementa um interpretador de comandos SQL que lê instruções de um arquivo texto e manipula arquivos binários correspondentes.
 
-## Descrição
-Sistema de gerenciamento de pets que utiliza fila para processar comandos SQL e árvore binária para ordenação de resultados.
+## Comandos Suportados
 
-## Estruturas de Dados
-1. **Fila de Comandos**: Para processar comandos SQL
-2. **Árvore Binária**: Para ordenação nos comandos SELECT
-3. **Estruturas Auxiliares**:
-   - Pessoa (código, nome, fone, endereço, data_nasc)
-   - TipoPet (código, descrição)
-   - Pet (código, código_pes, nome, código_tipo)
+O sistema suporta as quatro operações básicas (CRUD):
 
-## Comandos SQL Suportados
+1. **CREATE** - Inserção de dados:
 ```sql
-insert into tabela(campos) values(valores);
-update tabela set campo = valor where condição;
-delete from tabela where condição;
-select * from tabela where condição order by campo;
+insert into tabela values(valor1, valor2, ...);
 ```
 
-## Funcionalidades
-1. Leitura de comandos via arquivo ou entrada do usuário
-2. Processamento de comandos usando fila
-3. Ordenação de resultados usando árvore binária
-4. Validações de integridade (códigos únicos e referências)
-5. Persistência dos dados em arquivo
+2. **READ** - Consulta de dados:
+```sql
+select * from tabela;
+select * from tabela where campo = valor;
+```
+
+3. **UPDATE** - Atualização de dados:
+```sql
+update tabela set campo = valor where campo = valor;
+```
+
+4. **DELETE** - Remoção de dados:
+```sql
+delete from tabela where campo = valor;
+```
+
+## Funcionamento
+
+1. O programa recebe como entrada um arquivo `.txt` contendo comandos SQL
+2. Para cada comando:
+   - **INSERT**: Cria novo registro no arquivo binário
+   - **SELECT**: Lê e exibe registros do arquivo binário
+   - **UPDATE**: Modifica registros existentes
+   - **DELETE**: Remove registros do arquivo
+
+3. Formato do arquivo binário:
+   - Para cada registro:
+     * Tamanho dos dados (inteiro)
+     * Dados brutos (bytes)
+     * Flag de registro ativo/removido
+
+## Exemplo
+
+Arquivo `comandos.txt`:
+```sql
+insert into vinho values(1, 'Cabernet', 2020, 89.90);
+select * from vinho where ano = 2020;
+update vinho set preco = 99.90 where id = 1;
+delete from vinho where id = 1;
+```
+
+## Compilação e Execução
+
+1. Compile o projeto:
+```bash
+make
+```
+
+2. Execute o programa:
+```bash
+./programa
+```
+
+3. Digite o nome do arquivo de comandos quando solicitado:
+```
+Digite o nome do arquivo de comandos (.txt): comandos.txt
+```
+
+## Estrutura do Projeto
+
+- `main.c`: Programa principal
+- `estruturas.h`: Definição das estruturas de dados
+- `comandos.c`: Processamento dos comandos SQL
+- `registros.c`: Manipulação dos arquivos binários
+- `comandos.txt`: Arquivo de exemplo com comandos SQL

@@ -1,0 +1,3 @@
+insert into vinho values(1, 'Cabernet Premium', 1, 1, 2020, 89.90);
+insert into vinho values(2, 'Chardonnay Special', 2, 2, 2021, 120.50);
+insert into vinho values(3, 'Rose Delicato', 3, 1, 2022, 75.90);
