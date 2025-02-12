@@ -1,78 +1,71 @@
-# Interpretador de Comandos SQL para Arquivos Binários
+# Interpretador de Comandos SQL
 
-Este projeto implementa um interpretador de comandos SQL que lê instruções de um arquivo texto e manipula arquivos binários correspondentes.
+Este projeto implementa um interpretador de comandos SQL que manipula três tabelas específicas usando arquivos binários:
 
-## Comandos Suportados
+## Tabelas do Sistema
 
-O sistema suporta as quatro operações básicas (CRUD):
+1. **Pessoas**
+   - ID (inteiro)
+   - Nome (texto)
+   - CPF (texto)
+   - Idade (inteiro)
 
-1. **CREATE** - Inserção de dados:
+2. **Pet**
+   - ID (inteiro)
+   - Nome (texto)
+   - ID_Tipo (inteiro, referência para Tipo_Pet)
+   - ID_Pessoa (inteiro, referência para Pessoas)
+
+3. **Tipo_Pet**
+   - ID (inteiro)
+   - Descrição (texto)
+
+## Comandos SQL Suportados
+
+### 1. INSERT
 ```sql
-insert into tabela values(valor1, valor2, ...);
+INSERT INTO pessoas (id=1, nome=João Silva, cpf=123.456.789-00, idade=30);
+INSERT INTO pet (id=1, nome=Rex, id_tipo=1, id_pessoa=1);
+INSERT INTO tipo_pet (id=1, descricao=Cachorro);
 ```
 
-2. **READ** - Consulta de dados:
+### 2. SELECT
 ```sql
-select * from tabela;
-select * from tabela where campo = valor;
+SELECT * FROM pessoas;
+SELECT * FROM pessoas WHERE id=1;
+SELECT * FROM pet WHERE id_pessoa=1;
 ```
 
-3. **UPDATE** - Atualização de dados:
+### 3. UPDATE
 ```sql
-update tabela set campo = valor where campo = valor;
+UPDATE pessoas SET idade=31 WHERE id=1;
+UPDATE pet SET nome=Max WHERE id=1;
 ```
 
-4. **DELETE** - Remoção de dados:
+### 4. DELETE
 ```sql
-delete from tabela where campo = valor;
+DELETE FROM pessoas WHERE id=1;
+DELETE FROM pet WHERE id_pessoa=1;
 ```
 
-## Funcionamento
+## Estrutura dos Arquivos
 
-1. O programa recebe como entrada um arquivo `.txt` contendo comandos SQL
-2. Para cada comando:
-   - **INSERT**: Cria novo registro no arquivo binário
-   - **SELECT**: Lê e exibe registros do arquivo binário
-   - **UPDATE**: Modifica registros existentes
-   - **DELETE**: Remove registros do arquivo
+O sistema utiliza três arquivos binários para armazenar os dados:
+- `pessoas.bin`: Armazena registros da tabela Pessoas
+- `pet.bin`: Armazena registros da tabela Pet
+- `tipo_pet.bin`: Armazena registros da tabela Tipo_Pet
 
-3. Formato do arquivo binário:
-   - Para cada registro:
-     * Tamanho dos dados (inteiro)
-     * Dados brutos (bytes)
-     * Flag de registro ativo/removido
+## Como Usar
 
-## Exemplo
+1. Crie um arquivo de texto com os comandos SQL (ex: `comandos.txt`)
+2. Execute o programa informando o nome do arquivo
+3. O programa processará cada comando e mostrará os resultados
+4. Os dados serão salvos nos arquivos .bin correspondentes
 
-Arquivo `comandos.txt`:
-```sql
-insert into vinho values(1, 'Cabernet', 2020, 89.90);
-select * from vinho where ano = 2020;
-update vinho set preco = 99.90 where id = 1;
-delete from vinho where id = 1;
-```
+## Observações
 
-## Compilação e Execução
-
-1. Compile o projeto:
-```bash
-make
-```
-
-2. Execute o programa:
-```bash
-./programa
-```
-
-3. Digite o nome do arquivo de comandos quando solicitado:
-```
-Digite o nome do arquivo de comandos (.txt): comandos.txt
-```
-
-## Estrutura do Projeto
-
-- `main.c`: Programa principal
-- `estruturas.h`: Definição das estruturas de dados
-- `comandos.c`: Processamento dos comandos SQL
-- `registros.c`: Manipulação dos arquivos binários
-- `comandos.txt`: Arquivo de exemplo com comandos SQL
+- Os comandos devem seguir exatamente o formato especificado
+- Cada linha deve conter apenas um comando
+- Comentários podem ser feitos usando # no início da linha
+- Os IDs são únicos em cada tabela
+- Existe integridade referencial entre as tabelas (Pet referencia Pessoas e Tipo_Pet)
