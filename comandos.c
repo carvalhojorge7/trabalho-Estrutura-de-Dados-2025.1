@@ -162,24 +162,38 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
 // Processamento de comandos para Pet
 void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pessoas, TipoPet *lista_tipos) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
-        int codigo_pessoa = extrair_id_ref(comando, "codigo_pes");
-        int codigo_tipo = extrair_id_ref(comando, "codigo_tipo");
-        
-        // Verifica integridade referencial
-        if (!verificar_registro_existe(lista_pessoas, codigo_pessoa, 1)) {
-            printf("Erro: Pessoa não encontrada!\n");
-            return;
-        }
-        if (!verificar_registro_existe(lista_tipos, codigo_tipo, 3)) {
-            printf("Erro: Tipo de pet não encontrado!\n");
-            return;
-        }
-        
         Pet *novo = (Pet*)malloc(sizeof(Pet));
         novo->codigo = extrair_id(comando);
+        
+        // Verifica se o código já existe
+        if (verificar_registro_existe(*lista, novo->codigo, 2)) {
+            printf("ERRO: Já existe um pet com o código %d\n", novo->codigo);
+            free(novo);
+            return;
+        }
+        
         strcpy(novo->nome, extrair_campo(comando, "nome"));
-        novo->codigo_tipo = codigo_tipo;
-        novo->codigo_pes = codigo_pessoa;
+        novo->codigo_tipo = extrair_id_ref(comando, "codigo_tipo");
+        novo->codigo_pes = extrair_id_ref(comando, "codigo_pes");
+        
+        // Validações
+        if (strlen(novo->nome) == 0) {
+            printf("ERRO: O nome é obrigatório\n");
+            free(novo);
+            return;
+        }
+        
+        // Verifica integridade referencial
+        if (!verificar_registro_existe(lista_pessoas, novo->codigo_pes, 1)) {
+            printf("ERRO: Pessoa com código %d não encontrada\n", novo->codigo_pes);
+            free(novo);
+            return;
+        }
+        if (!verificar_registro_existe(lista_tipos, novo->codigo_tipo, 3)) {
+            printf("ERRO: Tipo de pet com código %d não encontrado\n", novo->codigo_tipo);
+            free(novo);
+            return;
+        }
         
         // Inserir no início da lista
         novo->prox = *lista;
@@ -189,8 +203,15 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
         
         // Salvar no arquivo
         salvar_pets(*lista);
+        printf("Pet inserido com sucesso!\n");
     }
     else if (strncasecmp(comando, "SELECT", 6) == 0) {
+        if (*lista == NULL) {
+            printf("Nenhum pet cadastrado.\n");
+            return;
+        }
+        
+        printf("=== Resultado da consulta ===\n");
         // Verifica se tem ORDER BY
         if (strstr(comando, "ORDER BY nome")) {
             NoArvore *arvore = NULL;
@@ -217,24 +238,34 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
                 p = p->prox;
             }
         }
+        printf("=== Fim da consulta ===\n");
     }
     else if (strncasecmp(comando, "UPDATE", 6) == 0) {
         int codigo = extrair_id(comando);
         Pet *p = *lista;
+        int encontrou = 0;
         
         while (p) {
             if (p->codigo == codigo) {
+                encontrou = 1;
                 char *nome = extrair_campo(comando, "nome");
                 char *codigo_tipo = extrair_campo(comando, "codigo_tipo");
                 char *codigo_pes = extrair_campo(comando, "codigo_pes");
                 
-                if (nome) strcpy(p->nome, nome);
+                if (nome) {
+                    if (strlen(nome) == 0) {
+                        printf("ERRO: O nome não pode ser vazio\n");
+                        return;
+                    }
+                    strcpy(p->nome, nome);
+                }
                 if (codigo_tipo) {
                     int novo_codigo_tipo = atoi(codigo_tipo);
                     if (verificar_registro_existe(lista_tipos, novo_codigo_tipo, 3)) {
                         p->codigo_tipo = novo_codigo_tipo;
                     } else {
-                        printf("Erro: Tipo de pet não encontrado!\n");
+                        printf("ERRO: Tipo de pet com código %d não encontrado\n", novo_codigo_tipo);
+                        return;
                     }
                 }
                 if (codigo_pes) {
@@ -242,23 +273,31 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
                     if (verificar_registro_existe(lista_pessoas, novo_codigo_pes, 1)) {
                         p->codigo_pes = novo_codigo_pes;
                     } else {
-                        printf("Erro: Pessoa não encontrada!\n");
+                        printf("ERRO: Pessoa com código %d não encontrada\n", novo_codigo_pes);
+                        return;
                     }
                 }
                 
                 // Salvar no arquivo
                 salvar_pets(*lista);
+                printf("Pet atualizado com sucesso!\n");
                 break;
             }
             p = p->prox;
+        }
+        
+        if (!encontrou) {
+            printf("ERRO: Pet com código %d não encontrado\n", codigo);
         }
     }
     else if (strncasecmp(comando, "DELETE", 6) == 0) {
         int codigo = extrair_id(comando);
         Pet *p = *lista;
+        int encontrou = 0;
         
         while (p) {
             if (p->codigo == codigo) {
+                encontrou = 1;
                 // Ajusta ponteiros
                 if (p->ant) p->ant->prox = p->prox;
                 else *lista = p->prox;
@@ -269,9 +308,14 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
                 
                 // Salvar no arquivo
                 salvar_pets(*lista);
+                printf("Pet removido com sucesso!\n");
                 break;
             }
             p = p->prox;
+        }
+        
+        if (!encontrou) {
+            printf("ERRO: Pet com código %d não encontrado\n", codigo);
         }
     }
 }
@@ -281,7 +325,22 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
         TipoPet *novo = (TipoPet*)malloc(sizeof(TipoPet));
         novo->codigo = extrair_id(comando);
+        
+        // Verifica se o código já existe
+        if (verificar_registro_existe(*lista, novo->codigo, 3)) {
+            printf("ERRO: Já existe um tipo de pet com o código %d\n", novo->codigo);
+            free(novo);
+            return;
+        }
+        
         strcpy(novo->nome, extrair_campo(comando, "nome"));
+        
+        // Validações
+        if (strlen(novo->nome) == 0) {
+            printf("ERRO: O nome é obrigatório\n");
+            free(novo);
+            return;
+        }
         
         // Inserir no início da lista
         novo->prox = *lista;
@@ -291,8 +350,15 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
         
         // Salvar no arquivo
         salvar_tipos(*lista);
+        printf("Tipo de pet inserido com sucesso!\n");
     }
     else if (strncasecmp(comando, "SELECT", 6) == 0) {
+        if (*lista == NULL) {
+            printf("Nenhum tipo de pet cadastrado.\n");
+            return;
+        }
+        
+        printf("=== Resultado da consulta ===\n");
         // Verifica se tem ORDER BY
         if (strstr(comando, "ORDER BY nome")) {
             NoArvore *arvore = NULL;
@@ -319,29 +385,52 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
                 t = t->prox;
             }
         }
+        printf("=== Fim da consulta ===\n");
     }
     else if (strncasecmp(comando, "UPDATE", 6) == 0) {
         int codigo = extrair_id(comando);
         TipoPet *t = *lista;
+        int encontrou = 0;
         
         while (t) {
             if (t->codigo == codigo) {
+                encontrou = 1;
                 char *nome = extrair_campo(comando, "nome");
-                if (nome) strcpy(t->nome, nome);
+                if (nome) {
+                    if (strlen(nome) == 0) {
+                        printf("ERRO: O nome não pode ser vazio\n");
+                        return;
+                    }
+                    strcpy(t->nome, nome);
+                }
                 
                 // Salvar no arquivo
                 salvar_tipos(*lista);
+                printf("Tipo de pet atualizado com sucesso!\n");
                 break;
             }
             t = t->prox;
+        }
+        
+        if (!encontrou) {
+            printf("ERRO: Tipo de pet com código %d não encontrado\n", codigo);
         }
     }
     else if (strncasecmp(comando, "DELETE", 6) == 0) {
         int codigo = extrair_id(comando);
         TipoPet *t = *lista;
+        int encontrou = 0;
         
         while (t) {
             if (t->codigo == codigo) {
+                encontrou = 1;
+                // Verifica se tem pets associados
+                Pet *pet_temp = NULL;  // Precisamos de uma lista de pets para verificar
+                if (verificar_registro_existe(pet_temp, codigo, 2)) {
+                    printf("ERRO: Não é possível excluir o tipo de pet pois existem pets associados a ele\n");
+                    return;
+                }
+                
                 // Ajusta ponteiros
                 if (t->ant) t->ant->prox = t->prox;
                 else *lista = t->prox;
@@ -352,9 +441,14 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
                 
                 // Salvar no arquivo
                 salvar_tipos(*lista);
+                printf("Tipo de pet removido com sucesso!\n");
                 break;
             }
             t = t->prox;
+        }
+        
+        if (!encontrou) {
+            printf("ERRO: Tipo de pet com código %d não encontrado\n", codigo);
         }
     }
 }

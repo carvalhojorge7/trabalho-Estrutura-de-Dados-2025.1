@@ -6,7 +6,19 @@
 
 #define MAX_COMANDO 500
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Erro: Uso correto: %s <arquivo_comandos>\n", argv[0]);
+        return 1;
+    }
+
+    // Abre o arquivo de comandos
+    FILE *arquivo = fopen(argv[1], "r");
+    if (!arquivo) {
+        printf("Erro: Não foi possível abrir o arquivo %s\n", argv[1]);
+        return 1;
+    }
+
     // Criar filas para os comandos
     Fila *comandos = criar_fila();
     Fila *fila_pessoas = criar_fila();
@@ -23,68 +35,61 @@ int main() {
     carregar_tipos(&lista_tipos);
     carregar_pets(&lista_pets);
     
-    // Ler comandos do arquivo
-    char arquivo[100];
-    printf("Digite o nome do arquivo de comandos: ");
-    scanf("%s", arquivo);
-    
-    FILE *f = fopen(arquivo, "r");
-    if (!f) {
-        printf("Erro ao abrir arquivo de comandos!\n");
-        return 1;
-    }
-    
+    // Lê os comandos do arquivo
     char linha[MAX_COMANDO];
-    while (fgets(linha, MAX_COMANDO, f)) {
-        // Remove \n do final
+    printf("\n=== Lendo comandos do arquivo ===\n\n");
+    while (fgets(linha, MAX_COMANDO, arquivo)) {
+        // Remove o \n do final da linha
         linha[strcspn(linha, "\n")] = 0;
-        if (strlen(linha) > 0) {
+        if (linha[0] != '#' && linha[0] != '\0') {  // Ignora comentários e linhas vazias
+            printf("Lendo comando: %s\n", linha);
             inserir_comando(comandos, linha);
         }
     }
-    fclose(f);
-    
-    // Separar comandos em filas específicas
+    printf("\n=== Separando comandos por tipo ===\n\n");
     separar_comandos(comandos, fila_pessoas, fila_pets, fila_tipos);
-    
-    // Processar comandos de cada fila
+
+    // Processa os comandos
     NoComando *cmd;
     
-    // Processar comandos de pessoas
-    printf("\nProcessando comandos de pessoas:\n");
-    while ((cmd = remover_comando(fila_pessoas)) != NULL) {
-        printf("\nComando: %s\n", cmd->comando);
-        processar_comando_pessoa(cmd->comando, &lista_pessoas);
-        free(cmd);
-    }
-    
-    // Processar comandos de pets
-    printf("\nProcessando comandos de pets:\n");
-    while ((cmd = remover_comando(fila_pets)) != NULL) {
-        printf("\nComando: %s\n", cmd->comando);
-        processar_comando_pet(cmd->comando, &lista_pets, lista_pessoas, lista_tipos);
-        free(cmd);
-    }
-    
-    // Processar comandos de tipos de pet
-    printf("\nProcessando comandos de tipos de pet:\n");
+    printf("\n=== Processando comandos para TIPO_PET ===\n\n");
     while ((cmd = remover_comando(fila_tipos)) != NULL) {
-        printf("\nComando: %s\n", cmd->comando);
+        printf("Executando: %s\n", cmd->comando);
         processar_comando_tipo_pet(cmd->comando, &lista_tipos);
+        printf("\n");
         free(cmd);
     }
-    
+
+    printf("\n=== Processando comandos para PESSOAS ===\n\n");
+    while ((cmd = remover_comando(fila_pessoas)) != NULL) {
+        printf("Executando: %s\n", cmd->comando);
+        processar_comando_pessoa(cmd->comando, &lista_pessoas);
+        printf("\n");
+        free(cmd);
+    }
+
+    printf("\n=== Processando comandos para PET ===\n\n");
+    while ((cmd = remover_comando(fila_pets)) != NULL) {
+        printf("Executando: %s\n", cmd->comando);
+        processar_comando_pet(cmd->comando, &lista_pets, lista_pessoas, lista_tipos);
+        printf("\n");
+        free(cmd);
+    }
+
     // Salvar alterações nos arquivos
     salvar_pessoas(lista_pessoas);
     salvar_tipos(lista_tipos);
     salvar_pets(lista_pets);
     
-    // Liberar memória
+    // Libera a memória
     liberar_fila(comandos);
     liberar_fila(fila_pessoas);
     liberar_fila(fila_pets);
     liberar_fila(fila_tipos);
-    
+
+    // Fecha o arquivo
+    fclose(arquivo);
+
     // Liberar listas encadeadas
     while (lista_pessoas) {
         Pessoa *p = lista_pessoas;
@@ -103,6 +108,9 @@ int main() {
         lista_pets = lista_pets->prox;
         free(p);
     }
-    
+
+    printf("\nPressione ENTER para sair...");
+    getchar();
+
     return 0;
 }
