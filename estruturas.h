@@ -1,50 +1,50 @@
 #ifndef ESTRUTURAS_H
 #define ESTRUTURAS_H
 
-// Estruturas básicas para os dados
+// Estruturas de dados
 typedef struct {
-    int codigo;           // obrigatório e único
-    char nome[100];       // obrigatório
+    int codigo;
+    char nome[100];
     char fone[20];
     char endereco[200];
-    char data_nasc[11];  // obrigatório, formato dd/mm/yyyy
+    char data_nasc[11];
 } Pessoa;
 
 typedef struct {
-    int codigo;          // obrigatório e único
-    char nome[100];      // obrigatório
+    int codigo;
+    char nome[100];
 } TipoPet;
 
 typedef struct {
-    int codigo;          // obrigatório e único
-    int codigo_pes;      // obrigatório, referencia Pessoa
-    char nome[100];      // obrigatório
-    int codigo_tipo;     // obrigatório, referencia TipoPet
+    int codigo;
+    int codigo_pes;
+    char nome[100];
+    int codigo_tipo;
 } Pet;
 
-// Estrutura da fila de comandos
+// Estrutura para comandos SQL
 typedef struct NoComando {
-    char descricao[500];  // comando SQL
-    char tipo;            // P: pessoa, T: tipo_pet, E: pet
+    char comando[500];
     struct NoComando *prox;
 } NoComando;
 
 typedef struct {
     NoComando *inicio;
     NoComando *fim;
-    int tamanho;
 } Fila;
 
-// Estrutura da árvore para ordenação
-typedef struct NoArvore {
-    void *dados;         // ponteiro genérico para os dados
-    char tipo;          // P: pessoa, T: tipo_pet, E: pet
-    struct NoArvore *esq;
-    struct NoArvore *dir;
-} NoArvore;
+// Funções para manipulação de arquivos
+void salvar_pessoa(Pessoa p);
+void salvar_tipo_pet(TipoPet t);
+void salvar_pet(Pet p);
+Pessoa* buscar_pessoa(int codigo);
+TipoPet* buscar_tipo_pet(int codigo);
+Pet* buscar_pet(int codigo);
 
-typedef struct {
-    NoArvore *raiz;
-} Arvore;
+// Funções da fila
+Fila* criar_fila();
+void inserir_comando(Fila *f, char *comando);
+NoComando* remover_comando(Fila *f);
+void processar_comandos(Fila *f);
 
 #endif

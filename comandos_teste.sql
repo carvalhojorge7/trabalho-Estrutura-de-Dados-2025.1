@@ -1,11 +1,13 @@
-insert into tipo_pet(codigo, descricao) values(1, 'cachorro');
-insert into tipo_pet(codigo, descricao) values(2, 'gato');
-insert into pessoa(codigo, nome, fone) values(1, 'joão', '859995566');
-insert into pessoa(codigo, nome, fone, endereco) values(2, 'maria', '859996677', 'rua b, nr 202');
-insert into pet(codigo, codigo_cli, nome, codigo_tipo) values(1,1, 'bilu', 2);
-insert into pessoa(codigo, nome, fone, data_nascimento) values(3, 'josé', '859997788', '04/10/2001');
-insert into pet(codigo, codigo_cli, nome, codigo_tipo) values(2,1, 'brother', 1);
-insert into pet(codigo, codigo_cli, nome, codigo_tipo) values(3,2, 'minie', 1);
-select * from pet where codigo = 3;
-delete from pet where codigo = 3;
-select * from pet order by nome;
+-- Inserindo tipos de pet
+INSERT INTO tipo_pet VALUES(1, 'Cachorro');
+INSERT INTO tipo_pet VALUES(2, 'Gato');
+INSERT INTO tipo_pet VALUES(3, 'Passaro');
+
+-- Inserindo pessoas
+INSERT INTO pessoa VALUES(1, 'João Silva', '85999998888', 'Rua A, 123', '15/03/1990');
+INSERT INTO pessoa VALUES(2, 'Maria Santos', '85977776666', 'Rua B, 456', '22/07/1985');
+
+-- Inserindo pets
+INSERT INTO pet VALUES(1, 1, 'Rex', 1);
+INSERT INTO pet VALUES(2, 1, 'Luna', 2);
+INSERT INTO pet VALUES(3, 2, 'Bob', 1);
