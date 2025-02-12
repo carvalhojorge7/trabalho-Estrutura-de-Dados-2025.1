@@ -72,8 +72,9 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
         Pessoa *nova = (Pessoa*)malloc(sizeof(Pessoa));
         nova->codigo = extrair_id(comando);
         strcpy(nova->nome, extrair_campo(comando, "nome"));
-        strcpy(nova->cpf, extrair_campo(comando, "cpf"));
-        nova->idade = atoi(extrair_campo(comando, "idade"));
+        strcpy(nova->fone, extrair_campo(comando, "fone"));
+        strcpy(nova->endereco, extrair_campo(comando, "endereco"));
+        strcpy(nova->data_nasc, extrair_campo(comando, "data_nasc"));
         
         // Inserir no início da lista
         nova->prox = *lista;
@@ -81,7 +82,8 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
         if (*lista) (*lista)->ant = nova;
         *lista = nova;
         
-        printf("Pessoa inserida com sucesso!\n");
+        // Salvar no arquivo
+        salvar_pessoas(*lista);
     }
     else if (strncasecmp(comando, "SELECT", 6) == 0) {
         // Verifica se tem ORDER BY
@@ -105,8 +107,8 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
             // Exibir normal
             Pessoa *p = *lista;
             while (p) {
-                printf("Código: %d, Nome: %s, CPF: %s, Idade: %d\n",
-                       p->codigo, p->nome, p->cpf, p->idade);
+                printf("Código: %d, Nome: %s, Fone: %s, Endereço: %s, Data Nasc.: %s\n",
+                       p->codigo, p->nome, p->fone, p->endereco, p->data_nasc);
                 p = p->prox;
             }
         }
@@ -118,14 +120,17 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
         while (p) {
             if (p->codigo == codigo) {
                 char *nome = extrair_campo(comando, "nome");
-                char *cpf = extrair_campo(comando, "cpf");
-                char *idade = extrair_campo(comando, "idade");
+                char *fone = extrair_campo(comando, "fone");
+                char *endereco = extrair_campo(comando, "endereco");
+                char *data_nasc = extrair_campo(comando, "data_nasc");
                 
                 if (nome) strcpy(p->nome, nome);
-                if (cpf) strcpy(p->cpf, cpf);
-                if (idade) p->idade = atoi(idade);
+                if (fone) strcpy(p->fone, fone);
+                if (endereco) strcpy(p->endereco, endereco);
+                if (data_nasc) strcpy(p->data_nasc, data_nasc);
                 
-                printf("Pessoa atualizada com sucesso!\n");
+                // Salvar no arquivo
+                salvar_pessoas(*lista);
                 break;
             }
             p = p->prox;
@@ -140,11 +145,13 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
                 // Ajusta ponteiros
                 if (p->ant) p->ant->prox = p->prox;
                 else *lista = p->prox;
-                
                 if (p->prox) p->prox->ant = p->ant;
                 
+                // Libera memória
                 free(p);
-                printf("Pessoa removida com sucesso!\n");
+                
+                // Salvar no arquivo
+                salvar_pessoas(*lista);
                 break;
             }
             p = p->prox;
@@ -270,7 +277,7 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
         TipoPet *novo = (TipoPet*)malloc(sizeof(TipoPet));
         novo->codigo = extrair_id(comando);
-        strcpy(novo->descricao, extrair_campo(comando, "descricao"));
+        strcpy(novo->nome, extrair_campo(comando, "nome"));
         
         // Inserir no início da lista
         novo->prox = *lista;
@@ -278,11 +285,12 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
         if (*lista) (*lista)->ant = novo;
         *lista = novo;
         
-        printf("Tipo de pet inserido com sucesso!\n");
+        // Salvar no arquivo
+        salvar_tipos(*lista);
     }
     else if (strncasecmp(comando, "SELECT", 6) == 0) {
         // Verifica se tem ORDER BY
-        if (strstr(comando, "ORDER BY descricao")) {
+        if (strstr(comando, "ORDER BY nome")) {
             NoArvore *arvore = NULL;
             TipoPet *t = *lista;
             
@@ -302,8 +310,8 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
             // Exibir normal
             TipoPet *t = *lista;
             while (t) {
-                printf("Código: %d, Descrição: %s\n",
-                       t->codigo, t->descricao);
+                printf("Código: %d, Nome: %s\n",
+                       t->codigo, t->nome);
                 t = t->prox;
             }
         }
@@ -314,10 +322,11 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
         
         while (t) {
             if (t->codigo == codigo) {
-                char *descricao = extrair_campo(comando, "descricao");
-                if (descricao) strcpy(t->descricao, descricao);
+                char *nome = extrair_campo(comando, "nome");
+                if (nome) strcpy(t->nome, nome);
                 
-                printf("Tipo de pet atualizado com sucesso!\n");
+                // Salvar no arquivo
+                salvar_tipos(*lista);
                 break;
             }
             t = t->prox;
@@ -332,11 +341,13 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
                 // Ajusta ponteiros
                 if (t->ant) t->ant->prox = t->prox;
                 else *lista = t->prox;
-                
                 if (t->prox) t->prox->ant = t->ant;
                 
+                // Libera memória
                 free(t);
-                printf("Tipo de pet removido com sucesso!\n");
+                
+                // Salvar no arquivo
+                salvar_tipos(*lista);
                 break;
             }
             t = t->prox;
