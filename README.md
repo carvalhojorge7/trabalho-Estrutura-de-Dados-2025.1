@@ -1,8 +1,8 @@
-# Sistema de Gerenciamento de Pets 🐾
+# Sistema de Gerenciamento de Pets 
 
 Trabalho desenvolvido para a disciplina de Estrutura de Dados do curso de Engenharia da Computação do IFCE - Campus Fortaleza.
 
-## 📋 Informações do Projeto
+## Informações do Projeto
 
 **Instituição:** Instituto Federal do Ceará - Campus Fortaleza  
 **Departamento:** Telemática  
@@ -12,46 +12,85 @@ Trabalho desenvolvido para a disciplina de Estrutura de Dados do curso de Engenh
 **Trabalho:** 2ª etapa (em dupla)  
 **Aluno:** Jorge Lucas Silva de Carvalho  
 
-## 📝 Descrição do Projeto
+## Descrição do Projeto
 
-Sistema de gerenciamento de pets que implementa operações CRUD (Create, Read, Update, Delete) utilizando estruturas de dados em C. O sistema utiliza uma sintaxe similar a SQL para manipulação dos dados e implementa estruturas como listas duplamente encadeadas, filas e árvores binárias.
+Sistema de processamento de comandos SQL para gerenciamento de pets utilizando estruturas de dados avançadas em C. O sistema implementa uma fila de comandos para processamento sequencial e uma árvore binária para ordenação dos resultados.
 
-## 🏗️ Estruturas de Dados
+## Estruturas de Dados Implementadas
 
-### Pessoa
+### 1. Fila de Comandos
 ```c
+// Nó da fila de comandos
+struct NoComando {
+    char comando[500];        // Comando SQL a ser executado
+    struct NoComando *prox;   // Próximo comando na fila
+};
+
+// Fila de comandos
+struct FilaComandos {
+    struct NoComando *inicio;  // Início da fila
+    struct NoComando *fim;     // Fim da fila
+    int tamanho;              // Quantidade de comandos na fila
+};
+```
+
+### 2. Árvore Binária para Ordenação
+```c
+// Nó da árvore binária
+struct NoArvore {
+    void *dados;              // Dados (Pessoa, Pet ou TipoPet)
+    struct NoArvore *esq;     // Filho esquerdo
+    struct NoArvore *dir;     // Filho direito
+    int altura;               // Para balanceamento AVL
+};
+```
+
+### 3. Estruturas de Dados Auxiliares
+```c
+// Estrutura para pessoa
 struct Pessoa {
-    int codigo;           // * Chave primária, único
-    char nome[100];       // * Obrigatório
+    int codigo;           
+    char nome[100];       
     char fone[20];        
     char endereco[200];   
-    char data_nasc[11];   // * Formato: dd/mm/yyyy
+    char data_nasc[11];   
 };
-```
 
-### Tipo de Pet
-```c
+// Estrutura para tipo de pet
 struct TipoPet {
-    int codigo;           // * Chave primária, único
-    char descricao[100];  // * Obrigatório
+    int codigo;           
+    char descricao[100];  
 };
-```
 
-### Pet
-```c
+// Estrutura para pet
 struct Pet {
-    int codigo;           // * Chave primária, único
-    int codigo_pes;       // * Chave estrangeira (Pessoa)
-    char nome[100];       // * Obrigatório
-    int codigo_tipo;      // * Chave estrangeira (TipoPet)
+    int codigo;           
+    int codigo_pes;       
+    char nome[100];       
+    int codigo_tipo;      
 };
 ```
 
-**Nota:** Campos marcados com * são obrigatórios.
+## Funcionamento do Sistema
 
-## 🔍 Comandos Suportados
+1. **Processamento de Comandos**
+   - Os comandos SQL são lidos do arquivo ou entrada do usuário
+   - Cada comando é inserido na fila de comandos
+   - Os comandos são processados em ordem FIFO (First In, First Out)
+   - Comandos inválidos são descartados durante a validação
 
-O sistema suporta os seguintes comandos SQL:
+2. **Filas Específicas**
+   - Após validação, os comandos são distribuídos em filas específicas:
+     - Fila de comandos para Pessoa
+     - Fila de comandos para TipoPet
+     - Fila de comandos para Pet
+
+3. **Ordenação com Árvore Binária**
+   - Comandos SELECT com ORDER BY utilizam uma árvore binária
+   - A árvore mantém os elementos ordenados automaticamente
+   - Travessia in-ordem para obter resultados ordenados
+
+## Comandos SQL Suportados
 
 ```sql
 -- Inserção
@@ -63,42 +102,11 @@ update tabela1 set campo2 = valor2, campo3 = valor3 where campo1 = valor1;
 -- Remoção
 delete from tabela1 where campo1 = valor1;
 
--- Consulta
+-- Consulta com ordenação (usa árvore binária)
 select * from tabela1 where campo1 = valor1 order by campo2;
 ```
 
-### Exemplo de Script
-```sql
-insert into tipo_pet(codigo, descricao) values(1, 'cachorro');
-insert into tipo_pet(codigo, descricao) values(2, 'gato');
-insert into pessoa(codigo, nome, fone) values(1, 'joão', '859995566');
-insert into pessoa(codigo, nome, fone, endereco) values(2, 'maria', '859996677', 'rua b, nr 202');
-insert into pet(codigo, codigo_cli, nome, codigo_tipo) values(1,1, 'bilu', 2);
-select * from pet where codigo = 3;
-```
-
-## ⚙️ Funcionalidades
-
-1. **Entrada de Dados**
-   - Leitura de comandos via arquivo
-   - Leitura de comandos via entrada do usuário
-
-2. **Validações**
-   - Códigos únicos para pessoas, pets e tipos de pets
-   - Integridade referencial entre tabelas
-   - Campos obrigatórios
-   - Regras de remoção para pessoas com pets
-
-3. **Estruturas de Dados Utilizadas**
-   - Listas duplamente encadeadas
-   - Filas para processamento de comandos
-   - Árvore binária para ordenação de resultados
-
-4. **Persistência**
-   - Armazenamento em arquivos
-   - Consistência entre memória e arquivo
-
-## 🚀 Como Executar
+## Como Executar
 
 1. Clone o repositório
 2. Compile o projeto usando o Makefile:
@@ -110,18 +118,20 @@ select * from pet where codigo = 3;
    ./pet_system
    ```
 
-## 📁 Organização do Código
+## Organização do Código
 
-- `src/` - Arquivos fonte (.c)
-- `include/` - Arquivos de cabeçalho (.h)
+- `src/`
+  - `fila.c` - Implementação da fila de comandos
+  - `arvore.c` - Implementação da árvore binária
+  - `parser.c` - Processamento dos comandos SQL
+  - `main.c` - Programa principal
+- `include/`
+  - `fila.h` - Definições da fila
+  - `arvore.h` - Definições da árvore
+  - `estruturas.h` - Estruturas auxiliares
 - `data/` - Arquivos de dados
 - `docs/` - Documentação adicional
-- `schema.sql` - Estrutura do banco de dados
 
-## 🤝 Contribuição
-
-Este é um projeto acadêmico desenvolvido como parte da disciplina de Estrutura de Dados. Contribuições são bem-vindas através de pull requests.
-
-## 📄 Licença
+## Licença
 
 Este projeto é para fins educacionais.
