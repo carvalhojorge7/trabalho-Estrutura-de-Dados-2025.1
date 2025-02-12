@@ -237,32 +237,39 @@ int comparar_nomes(void *a, void *b, int tipo) {
     return strcmp(nome_a, nome_b);
 }
 
-void inserir_na_arvore(NoArvore **raiz, void *dados, int tipo) {
-    if (*raiz == NULL) {
-        *raiz = (NoArvore*)malloc(sizeof(NoArvore));
-        (*raiz)->dados = dados;
-        (*raiz)->esq = NULL;
-        (*raiz)->dir = NULL;
-        return;
+NoArvore* inserir_no(NoArvore *raiz, void *dados, int tipo) {
+    if (raiz == NULL) {
+        NoArvore *novo = (NoArvore*)malloc(sizeof(NoArvore));
+        novo->dados = dados;
+        novo->esq = NULL;
+        novo->dir = NULL;
+        return novo;
     }
     
-    int comp;
-    if (tipo == 1) {  // Pessoa
-        comp = strcmp(((Pessoa*)dados)->nome, ((Pessoa*)(*raiz)->dados)->nome);
-    }
-    else if (tipo == 2) {  // Pet
-        comp = strcmp(((Pet*)dados)->nome, ((Pet*)(*raiz)->dados)->nome);
-    }
-    else {  // TipoPet
-        comp = strcmp(((TipoPet*)dados)->nome, ((TipoPet*)(*raiz)->dados)->nome);
+    // Verifica se já existe um registro com o mesmo código
+    int codigo_novo, codigo_atual;
+    if (tipo == 1) {
+        codigo_novo = ((Pessoa*)dados)->codigo;
+        codigo_atual = ((Pessoa*)raiz->dados)->codigo;
+    } else if (tipo == 2) {
+        codigo_novo = ((Pet*)dados)->codigo;
+        codigo_atual = ((Pet*)raiz->dados)->codigo;
+    } else {
+        codigo_novo = ((TipoPet*)dados)->codigo;
+        codigo_atual = ((TipoPet*)raiz->dados)->codigo;
     }
     
-    if (comp < 0) {
-        inserir_na_arvore(&(*raiz)->esq, dados, tipo);
+    if (codigo_novo == codigo_atual) {
+        return raiz;  // Não permite duplicatas
     }
-    else {
-        inserir_na_arvore(&(*raiz)->dir, dados, tipo);
+    
+    if (codigo_novo < codigo_atual) {
+        raiz->esq = inserir_no(raiz->esq, dados, tipo);
+    } else {
+        raiz->dir = inserir_no(raiz->dir, dados, tipo);
     }
+    
+    return raiz;
 }
 
 void exibir_dados(void *dados, int tipo) {
@@ -284,9 +291,68 @@ void exibir_dados(void *dados, int tipo) {
 }
 
 void exibir_arvore_ordenada(NoArvore *raiz, int tipo) {
-    if (raiz != NULL) {
-        exibir_arvore_ordenada(raiz->esq, tipo);
-        exibir_dados(raiz->dados, tipo);
-        exibir_arvore_ordenada(raiz->dir, tipo);
+    static int *codigos_exibidos = NULL;
+    static int num_exibidos = 0;
+    static int capacidade = 0;
+    
+    if (raiz == NULL) {
+        // Limpa o array quando terminar de exibir a árvore inteira
+        if (codigos_exibidos) {
+            free(codigos_exibidos);
+            codigos_exibidos = NULL;
+            num_exibidos = 0;
+            capacidade = 0;
+        }
+        return;
     }
+    
+    if (!codigos_exibidos) {
+        capacidade = 100;
+        codigos_exibidos = (int*)malloc(capacidade * sizeof(int));
+        num_exibidos = 0;
+    }
+    
+    exibir_arvore_ordenada(raiz->esq, tipo);
+    
+    // Verifica se o código já foi exibido
+    int codigo;
+    if (tipo == 1) {
+        codigo = ((Pessoa*)raiz->dados)->codigo;
+    } else if (tipo == 2) {
+        codigo = ((Pet*)raiz->dados)->codigo;
+    } else {
+        codigo = ((TipoPet*)raiz->dados)->codigo;
+    }
+    
+    int ja_exibido = 0;
+    for (int i = 0; i < num_exibidos; i++) {
+        if (codigos_exibidos[i] == codigo) {
+            ja_exibido = 1;
+            break;
+        }
+    }
+    
+    if (!ja_exibido) {
+        exibir_dados(raiz->dados, tipo);
+        if (num_exibidos < capacidade) {
+            codigos_exibidos[num_exibidos++] = codigo;
+        }
+    }
+    
+    exibir_arvore_ordenada(raiz->dir, tipo);
+}
+
+// Insere uma pessoa na árvore
+void inserir_pessoa(NoArvore **raiz, Pessoa *p) {
+    *raiz = inserir_no(*raiz, p, 1);
+}
+
+// Insere um pet na árvore
+void inserir_pet(NoArvore **raiz, Pet *p) {
+    *raiz = inserir_no(*raiz, p, 2);
+}
+
+// Insere um tipo de pet na árvore
+void inserir_tipo_pet(NoArvore **raiz, TipoPet *t) {
+    *raiz = inserir_no(*raiz, t, 3);
 }

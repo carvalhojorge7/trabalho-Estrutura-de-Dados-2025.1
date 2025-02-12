@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "comandos.h"
+#include <ctype.h>
 
 // Funções auxiliares para extrair informações dos comandos
 int extrair_id(const char *comando) {
-    char *pos = strstr(comando, "codigo=");
+    const char *pos = strstr(comando, "codigo=");
     if (pos) {
         pos += 7; // Pula "codigo="
         return atoi(pos);
@@ -17,7 +18,7 @@ int extrair_id(const char *comando) {
 int extrair_id_ref(const char *comando, const char *campo) {
     char busca[50];
     sprintf(busca, "%s=", campo);
-    char *pos = strstr(comando, busca);
+    const char *pos = strstr(comando, busca);
     if (pos) {
         pos += strlen(busca);
         return atoi(pos);
@@ -31,14 +32,14 @@ char *extrair_campo(const char *comando, const char *campo) {
     char busca[50];
     sprintf(busca, "%s=", campo);
     
-    char *inicio = strstr(comando, busca);
+    const char *inicio = strstr(comando, busca);
     if (inicio) {
         inicio += strlen(busca);
         
         // Se o valor começa com aspas, procura o fechamento
         if (*inicio == '"') {
             inicio++;
-            char *fim = strchr(inicio, '"');
+            const char *fim = strchr(inicio, '"');
             if (fim) {
                 strncpy(valor, inicio, fim - inicio);
                 valor[fim - inicio] = '\0';
@@ -47,7 +48,7 @@ char *extrair_campo(const char *comando, const char *campo) {
         }
         
         // Caso contrário, copia até a vírgula ou parêntese
-        char *fim = strpbrk(inicio, ",);");
+        const char *fim = strpbrk(inicio, ",);");
         if (fim) {
             strncpy(valor, inicio, fim - inicio);
             valor[fim - inicio] = '\0';
@@ -57,6 +58,63 @@ char *extrair_campo(const char *comando, const char *campo) {
         return valor;
     }
     return "";
+}
+
+// Extrai campo e valor de um comando UPDATE
+int extrair_campo_valor(const char *comando, char *campo, char *valor) {
+    const char *set = strcasestr(comando, "SET");
+    if (!set) return -1;
+    
+    const char *where = strcasestr(comando, "WHERE");
+    if (!where) return -1;
+    
+    // Pula o SET e espaços
+    set += 3;
+    while (*set == ' ') set++;
+    
+    // Copia o campo até o =
+    const char *igual = strchr(set, '=');
+    if (!igual) return -1;
+    
+    strncpy(campo, set, igual - set);
+    campo[igual - set] = '\0';
+    
+    // Remove espaços do final do campo
+    char *fim = campo + strlen(campo) - 1;
+    while (fim > campo && *fim == ' ') fim--;
+    *(fim + 1) = '\0';
+    
+    // Pula o = e espaços
+    igual++;
+    while (*igual == ' ') igual++;
+    
+    // Copia o valor até o WHERE
+    strncpy(valor, igual, where - igual);
+    valor[where - igual] = '\0';
+    
+    // Remove espaços do final do valor
+    fim = valor + strlen(valor) - 1;
+    while (fim > valor && *fim == ' ') fim--;
+    *(fim + 1) = '\0';
+    
+    return 0;
+}
+
+// Função auxiliar para comparação case-insensitive
+char *strcasestr(const char *haystack, const char *needle) {
+    if (!*needle) return (char*)haystack;
+    
+    for (; *haystack; haystack++) {
+        if (toupper(*haystack) == toupper(*needle)) {
+            const char *h = haystack, *n = needle;
+            while (*h && *n && toupper(*h) == toupper(*n)) {
+                h++;
+                n++;
+            }
+            if (!*n) return (char*)haystack;
+        }
+    }
+    return NULL;
 }
 
 // Funções de busca
@@ -85,46 +143,6 @@ TipoPet *buscar_tipo_pet(TipoPet *lista, int codigo) {
         lista = lista->prox;
     }
     return NULL;
-}
-
-// Extrai campo e valor de um comando UPDATE
-int extrair_campo_valor(char *comando, char *campo, char *valor) {
-    char *set = strcasestr(comando, "SET");
-    if (!set) return -1;
-    
-    char *where = strcasestr(comando, "WHERE");
-    if (!where) return -1;
-    
-    // Pula o SET e espaços
-    set += 3;
-    while (*set == ' ') set++;
-    
-    // Copia o campo até o =
-    char *igual = strchr(set, '=');
-    if (!igual) return -1;
-    
-    strncpy(campo, set, igual - set);
-    campo[igual - set] = '\0';
-    
-    // Remove espaços do final do campo
-    char *fim = campo + strlen(campo) - 1;
-    while (fim > campo && *fim == ' ') fim--;
-    *(fim + 1) = '\0';
-    
-    // Pula o = e espaços
-    igual++;
-    while (*igual == ' ') igual++;
-    
-    // Copia o valor até o WHERE
-    strncpy(valor, igual, where - igual);
-    valor[where - igual] = '\0';
-    
-    // Remove espaços do final do valor
-    fim = valor + strlen(valor) - 1;
-    while (fim > valor && *fim == ' ') fim--;
-    *(fim + 1) = '\0';
-    
-    return 0;
 }
 
 // Função genérica para verificar se um registro existe
@@ -453,8 +471,8 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
 }
 
 // Processa comando UPDATE
-void processar_update(char *comando, void **lista, int tipo) {
-    char campo[50], valor[100];
+void processar_update(const char *comando, void **lista, int tipo) {
+    char campo[100], valor[200];
     int codigo;
     
     // Extrai o código
@@ -468,6 +486,14 @@ void processar_update(char *comando, void **lista, int tipo) {
     if (extrair_campo_valor(comando, campo, valor) != 0) {
         printf("ERRO: Formato invalido no comando UPDATE\n");
         return;
+    }
+    
+    // Remove aspas do valor se existirem
+    if (valor[0] == '"') {
+        memmove(valor, valor + 1, strlen(valor));
+        if (valor[strlen(valor) - 1] == '"') {
+            valor[strlen(valor) - 1] = '\0';
+        }
     }
     
     if (tipo == 1) {  // Pessoa
@@ -521,5 +547,59 @@ void processar_update(char *comando, void **lista, int tipo) {
             return;
         }
         salvar_tipos(*lista);
+    }
+}
+
+// Processa comando INSERT para pessoas
+void processar_insert_pessoa(const char *comando, NoArvore **raiz) {
+    Pessoa *p = extrair_dados_pessoa(comando);
+    if (p != NULL) {
+        // Verifica se já existe uma pessoa com o mesmo código
+        if (buscar_pessoa(*raiz, p->codigo) != NULL) {
+            printf("ERRO: Ja existe uma pessoa com o codigo %d\n", p->codigo);
+            free(p);
+            return;
+        }
+        inserir_pessoa(raiz, p);
+        printf("Pessoa inserida com sucesso!\n");
+        salvar_pessoas(*raiz);
+    }
+}
+
+// Processa comando INSERT para pets
+void processar_insert_pet(const char *comando, NoArvore **raiz, NoArvore *pessoas) {
+    Pet *p = extrair_dados_pet(comando);
+    if (p != NULL) {
+        // Verifica se já existe um pet com o mesmo código
+        if (buscar_pet(*raiz, p->codigo) != NULL) {
+            printf("ERRO: Ja existe um pet com o codigo %d\n", p->codigo);
+            free(p);
+            return;
+        }
+        // Verifica se a pessoa existe
+        if (buscar_pessoa(pessoas, p->codigo_pes) == NULL) {
+            printf("ERRO: Pessoa com codigo %d nao encontrada\n", p->codigo_pes);
+            free(p);
+            return;
+        }
+        inserir_pet(raiz, p);
+        printf("Pet inserido com sucesso!\n");
+        salvar_pets(*raiz);
+    }
+}
+
+// Processa comando INSERT para tipos de pet
+void processar_insert_tipo_pet(const char *comando, NoArvore **raiz) {
+    TipoPet *t = extrair_dados_tipo_pet(comando);
+    if (t != NULL) {
+        // Verifica se já existe um tipo de pet com o mesmo código
+        if (buscar_tipo_pet(*raiz, t->codigo) != NULL) {
+            printf("ERRO: Ja existe um tipo de pet com o codigo %d\n", t->codigo);
+            free(t);
+            return;
+        }
+        inserir_tipo_pet(raiz, t);
+        printf("Tipo de pet inserido com sucesso!\n");
+        salvar_tipos(*raiz);
     }
 }

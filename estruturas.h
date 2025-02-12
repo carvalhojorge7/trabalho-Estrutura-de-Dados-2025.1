@@ -72,10 +72,16 @@ void salvar_pessoas(Pessoa *lista);
 void salvar_tipos(TipoPet *lista);
 void salvar_pets(Pet *lista);
 
+// Funções de manipulação da árvore
+NoArvore* inserir_no(NoArvore *raiz, void *dados, int tipo);
+void inserir_pessoa(NoArvore **raiz, Pessoa *p);
+void inserir_pet(NoArvore **raiz, Pet *p);
+void inserir_tipo_pet(NoArvore **raiz, TipoPet *t);
+void exibir_arvore_ordenada(NoArvore *raiz, int tipo);
+void exibir_dados(void *dados, int tipo);
+
 // Funções para árvore binária
 NoArvore* criar_arvore();
-void inserir_na_arvore(NoArvore **raiz, void *dados, int tipo);
-void exibir_arvore_ordenada(NoArvore *raiz, int tipo);
 void liberar_arvore(NoArvore *raiz, int liberar_dados);
 
 #endif
