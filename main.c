@@ -21,12 +21,12 @@ int main() {
     int opcao;
     
     do {
-        printf("\nSistema de Gerenciamento de Pets\n");
+        printf("\n=== Sistema de Gerenciamento de Pets ===\n");
         printf("1. Ler comando do teclado\n");
         printf("2. Ler comandos de arquivo\n");
         printf("3. Processar comandos\n");
         printf("0. Sair\n");
-        printf("Opção: ");
+        printf("Digite sua opcao: ");
         scanf("%d", &opcao);
         getchar(); // Limpar buffer
         
