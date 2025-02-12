@@ -256,20 +256,20 @@ void exibir_dados(void *dados, int tipo) {
     switch (tipo) {
         case 1: { // Pessoa
             Pessoa *p = (Pessoa*)dados;
-            printf("ID: %d, Nome: %s, CPF: %s, Idade: %d\n",
-                   p->id, p->nome, p->cpf, p->idade);
+            printf("Código: %d, Nome: %s, Fone: %s, Endereço: %s, Data Nasc.: %s\n",
+                   p->codigo, p->nome, p->fone, p->endereco, p->data_nasc);
             break;
         }
         case 2: { // Pet
             Pet *p = (Pet*)dados;
-            printf("ID: %d, Nome: %s, ID_Tipo: %d, ID_Pessoa: %d\n",
-                   p->id, p->nome, p->id_tipo, p->id_pessoa);
+            printf("Código: %d, Nome: %s, Código Tipo: %d, Código Pessoa: %d\n",
+                   p->codigo, p->nome, p->codigo_tipo, p->codigo_pes);
             break;
         }
         case 3: { // TipoPet
             TipoPet *t = (TipoPet*)dados;
-            printf("ID: %d, Descrição: %s\n",
-                   t->id, t->descricao);
+            printf("Código: %d, Nome: %s\n",
+                   t->codigo, t->nome);
             break;
         }
     }
@@ -282,55 +282,3 @@ void exibir_arvore_ordenada(NoArvore *raiz, int tipo) {
     exibir_dados(raiz->dados, tipo);
     exibir_arvore_ordenada(raiz->dir, tipo);
 }
-
-struct Pessoa {
-    int id;
-    char nome[100];
-    char cpf[20];
-    int idade;
-    struct Pessoa* prox;
-    struct Pessoa* ant;
-};
-
-struct Tipo_Pet {
-    int id;
-    char descricao[100];
-    struct Tipo_Pet* prox;
-    struct Tipo_Pet* ant;
-};
-
-struct Pet {
-    int id;
-    int id_pessoa;
-    int id_tipo;
-    char nome[100];
-    struct Pet* prox;
-    struct Pet* ant;
-};
-
-struct Comando {
-    char descricao[255];
-    struct Comando* prox;
-}; // FILA
-
-struct Ordem {
-    char campo[255];
-    struct Ordem *direita;
-    struct Ordem *esquerda;
-}; // ARVORE
-
-struct NoComando {
-    char comando[255];
-    struct NoComando* prox;
-};
-
-struct Fila {
-    struct NoComando* inicio;
-    struct NoComando* fim;
-};
-
-struct NoArvore {
-    void* dados;
-    struct NoArvore* esq;
-    struct NoArvore* dir;
-};

@@ -35,35 +35,34 @@ int extrair_id_ref(const char *comando, const char *campo) {
     return atoi(valor);
 }
 
-// Função genérica para verificar existência de registro
-int verificar_registro_existe(void *lista, int id, TipoRegistro tipo) {
-    void *atual = lista;
-    
-    while (atual) {
-        int id_atual;
-        void *prox;
-        
-        switch (tipo) {
-            case TIPO_PESSOA:
-                id_atual = ((Pessoa*)atual)->id;
-                prox = ((Pessoa*)atual)->prox;
-                break;
-            case TIPO_PET:
-                id_atual = ((Pet*)atual)->id;
-                prox = ((Pet*)atual)->prox;
-                break;
-            case TIPO_TIPO_PET:
-                id_atual = ((TipoPet*)atual)->id;
-                prox = ((TipoPet*)atual)->prox;
-                break;
-            default:
-                return 0;
+// Função genérica para verificar se um registro existe
+int verificar_registro_existe(void *lista, int codigo, int tipo) {
+    switch (tipo) {
+        case 1: { // Pessoa
+            Pessoa *p = (Pessoa*)lista;
+            while (p) {
+                if (p->codigo == codigo) return 1;
+                p = p->prox;
+            }
+            break;
         }
-        
-        if (id_atual == id) return 1;
-        atual = prox;
+        case 2: { // Pet
+            Pet *p = (Pet*)lista;
+            while (p) {
+                if (p->codigo == codigo) return 1;
+                p = p->prox;
+            }
+            break;
+        }
+        case 3: { // TipoPet
+            TipoPet *t = (TipoPet*)lista;
+            while (t) {
+                if (t->codigo == codigo) return 1;
+                t = t->prox;
+            }
+            break;
+        }
     }
-    
     return 0;
 }
 
@@ -71,7 +70,7 @@ int verificar_registro_existe(void *lista, int id, TipoRegistro tipo) {
 void processar_comando_pessoa(const char *comando, Pessoa **lista) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
         Pessoa *nova = (Pessoa*)malloc(sizeof(Pessoa));
-        nova->id = extrair_id(comando);
+        nova->codigo = extrair_id(comando);
         strcpy(nova->nome, extrair_campo(comando, "nome"));
         strcpy(nova->cpf, extrair_campo(comando, "cpf"));
         nova->idade = atoi(extrair_campo(comando, "idade"));
@@ -106,18 +105,18 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
             // Exibir normal
             Pessoa *p = *lista;
             while (p) {
-                printf("ID: %d, Nome: %s, CPF: %s, Idade: %d\n",
-                       p->id, p->nome, p->cpf, p->idade);
+                printf("Código: %d, Nome: %s, CPF: %s, Idade: %d\n",
+                       p->codigo, p->nome, p->cpf, p->idade);
                 p = p->prox;
             }
         }
     }
     else if (strncasecmp(comando, "UPDATE", 6) == 0) {
-        int id = extrair_id(comando);
+        int codigo = extrair_id(comando);
         Pessoa *p = *lista;
         
         while (p) {
-            if (p->id == id) {
+            if (p->codigo == codigo) {
                 char *nome = extrair_campo(comando, "nome");
                 char *cpf = extrair_campo(comando, "cpf");
                 char *idade = extrair_campo(comando, "idade");
@@ -133,11 +132,11 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
         }
     }
     else if (strncasecmp(comando, "DELETE", 6) == 0) {
-        int id = extrair_id(comando);
+        int codigo = extrair_id(comando);
         Pessoa *p = *lista;
         
         while (p) {
-            if (p->id == id) {
+            if (p->codigo == codigo) {
                 // Ajusta ponteiros
                 if (p->ant) p->ant->prox = p->prox;
                 else *lista = p->prox;
@@ -156,24 +155,24 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
 // Processamento de comandos para Pet
 void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pessoas, TipoPet *lista_tipos) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
-        int id_pessoa = extrair_id_ref(comando, "id_pessoa");
-        int id_tipo = extrair_id_ref(comando, "id_tipo");
+        int codigo_pessoa = extrair_id_ref(comando, "codigo_pessoa");
+        int codigo_tipo = extrair_id_ref(comando, "codigo_tipo");
         
         // Verifica integridade referencial
-        if (!verificar_registro_existe(lista_pessoas, id_pessoa, TIPO_PESSOA)) {
+        if (!verificar_registro_existe(lista_pessoas, codigo_pessoa, 1)) {
             printf("Erro: Pessoa não encontrada!\n");
             return;
         }
-        if (!verificar_registro_existe(lista_tipos, id_tipo, TIPO_TIPO_PET)) {
+        if (!verificar_registro_existe(lista_tipos, codigo_tipo, 3)) {
             printf("Erro: Tipo de pet não encontrado!\n");
             return;
         }
         
         Pet *novo = (Pet*)malloc(sizeof(Pet));
-        novo->id = extrair_id(comando);
+        novo->codigo = extrair_id(comando);
         strcpy(novo->nome, extrair_campo(comando, "nome"));
-        novo->id_tipo = id_tipo;
-        novo->id_pessoa = id_pessoa;
+        novo->codigo_tipo = codigo_tipo;
+        novo->codigo_pessoa = codigo_pessoa;
         
         // Inserir no início da lista
         novo->prox = *lista;
@@ -205,35 +204,35 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
             // Exibir normal
             Pet *p = *lista;
             while (p) {
-                printf("ID: %d, Nome: %s, ID_Tipo: %d, ID_Pessoa: %d\n",
-                       p->id, p->nome, p->id_tipo, p->id_pessoa);
+                printf("Código: %d, Nome: %s, Código_Tipo: %d, Código_Pessoa: %d\n",
+                       p->codigo, p->nome, p->codigo_tipo, p->codigo_pessoa);
                 p = p->prox;
             }
         }
     }
     else if (strncasecmp(comando, "UPDATE", 6) == 0) {
-        int id = extrair_id(comando);
+        int codigo = extrair_id(comando);
         Pet *p = *lista;
         
         while (p) {
-            if (p->id == id) {
+            if (p->codigo == codigo) {
                 char *nome = extrair_campo(comando, "nome");
-                char *id_tipo = extrair_campo(comando, "id_tipo");
-                char *id_pessoa = extrair_campo(comando, "id_pessoa");
+                char *codigo_tipo = extrair_campo(comando, "codigo_tipo");
+                char *codigo_pessoa = extrair_campo(comando, "codigo_pessoa");
                 
                 if (nome) strcpy(p->nome, nome);
-                if (id_tipo) {
-                    int novo_id_tipo = atoi(id_tipo);
-                    if (verificar_registro_existe(lista_tipos, novo_id_tipo, TIPO_TIPO_PET)) {
-                        p->id_tipo = novo_id_tipo;
+                if (codigo_tipo) {
+                    int novo_codigo_tipo = atoi(codigo_tipo);
+                    if (verificar_registro_existe(lista_tipos, novo_codigo_tipo, 3)) {
+                        p->codigo_tipo = novo_codigo_tipo;
                     } else {
                         printf("Erro: Tipo de pet não encontrado!\n");
                     }
                 }
-                if (id_pessoa) {
-                    int novo_id_pessoa = atoi(id_pessoa);
-                    if (verificar_registro_existe(lista_pessoas, novo_id_pessoa, TIPO_PESSOA)) {
-                        p->id_pessoa = novo_id_pessoa;
+                if (codigo_pessoa) {
+                    int novo_codigo_pessoa = atoi(codigo_pessoa);
+                    if (verificar_registro_existe(lista_pessoas, novo_codigo_pessoa, 1)) {
+                        p->codigo_pessoa = novo_codigo_pessoa;
                     } else {
                         printf("Erro: Pessoa não encontrada!\n");
                     }
@@ -246,11 +245,11 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
         }
     }
     else if (strncasecmp(comando, "DELETE", 6) == 0) {
-        int id = extrair_id(comando);
+        int codigo = extrair_id(comando);
         Pet *p = *lista;
         
         while (p) {
-            if (p->id == id) {
+            if (p->codigo == codigo) {
                 // Ajusta ponteiros
                 if (p->ant) p->ant->prox = p->prox;
                 else *lista = p->prox;
@@ -270,7 +269,7 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
 void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
     if (strncasecmp(comando, "INSERT", 6) == 0) {
         TipoPet *novo = (TipoPet*)malloc(sizeof(TipoPet));
-        novo->id = extrair_id(comando);
+        novo->codigo = extrair_id(comando);
         strcpy(novo->descricao, extrair_campo(comando, "descricao"));
         
         // Inserir no início da lista
@@ -303,18 +302,18 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
             // Exibir normal
             TipoPet *t = *lista;
             while (t) {
-                printf("ID: %d, Descrição: %s\n",
-                       t->id, t->descricao);
+                printf("Código: %d, Descrição: %s\n",
+                       t->codigo, t->descricao);
                 t = t->prox;
             }
         }
     }
     else if (strncasecmp(comando, "UPDATE", 6) == 0) {
-        int id = extrair_id(comando);
+        int codigo = extrair_id(comando);
         TipoPet *t = *lista;
         
         while (t) {
-            if (t->id == id) {
+            if (t->codigo == codigo) {
                 char *descricao = extrair_campo(comando, "descricao");
                 if (descricao) strcpy(t->descricao, descricao);
                 
@@ -325,11 +324,11 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
         }
     }
     else if (strncasecmp(comando, "DELETE", 6) == 0) {
-        int id = extrair_id(comando);
+        int codigo = extrair_id(comando);
         TipoPet *t = *lista;
         
         while (t) {
-            if (t->id == id) {
+            if (t->codigo == codigo) {
                 // Ajusta ponteiros
                 if (t->ant) t->ant->prox = t->prox;
                 else *lista = t->prox;

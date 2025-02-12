@@ -3,26 +3,27 @@
 
 // Estruturas para os dados
 typedef struct Pessoa {
-    int id;
+    int codigo;
     char nome[100];
-    char cpf[15];
-    int idade;
+    char fone[20];
+    char endereco[200];
+    char data_nasc[11];
     struct Pessoa *prox;
     struct Pessoa *ant;
 } Pessoa;
 
 typedef struct TipoPet {
-    int id;
-    char descricao[100];
+    int codigo;
+    char nome[100];
     struct TipoPet *prox;
     struct TipoPet *ant;
 } TipoPet;
 
 typedef struct Pet {
-    int id;
+    int codigo;
     char nome[100];
-    int id_tipo;
-    int id_pessoa;
+    int codigo_tipo;
+    int codigo_pes;
     struct Pet *prox;
     struct Pet *ant;
 } Pet;
