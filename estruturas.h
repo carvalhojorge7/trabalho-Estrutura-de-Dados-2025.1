@@ -75,5 +75,6 @@ void salvar_pets(Pet *lista);
 NoArvore* criar_arvore();
 void inserir_na_arvore(NoArvore **raiz, void *dados, int tipo);
 void exibir_arvore_ordenada(NoArvore *raiz, int tipo);
+void liberar_arvore(NoArvore *raiz, int liberar_dados);
 
 #endif

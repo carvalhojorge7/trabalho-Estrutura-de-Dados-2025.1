@@ -98,7 +98,9 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
             
             // Exibir ordenado
             exibir_arvore_ordenada(arvore, 1);
-            // TODO: Liberar árvore
+            
+            // Libera a árvore (0 porque não queremos liberar os dados, que estão na lista)
+            liberar_arvore(arvore, 0);
         }
         else {
             // Exibir normal
@@ -195,7 +197,9 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
             
             // Exibir ordenado
             exibir_arvore_ordenada(arvore, 2);
-            // TODO: Liberar árvore
+            
+            // Libera a árvore (0 porque não queremos liberar os dados, que estão na lista)
+            liberar_arvore(arvore, 0);
         }
         else {
             // Exibir normal
@@ -291,7 +295,9 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
             
             // Exibir ordenado
             exibir_arvore_ordenada(arvore, 3);
-            // TODO: Liberar árvore
+            
+            // Libera a árvore (0 porque não queremos liberar os dados, que estão na lista)
+            liberar_arvore(arvore, 0);
         }
         else {
             // Exibir normal

@@ -198,6 +198,22 @@ NoArvore* criar_arvore() {
     return NULL;
 }
 
+void liberar_arvore(NoArvore *raiz, int liberar_dados) {
+    if (!raiz) return;
+    
+    // Libera recursivamente as subárvores
+    liberar_arvore(raiz->esq, liberar_dados);
+    liberar_arvore(raiz->dir, liberar_dados);
+    
+    // Se liberar_dados for 1, libera também os dados (só usado quando os dados são alocados dinamicamente)
+    if (liberar_dados) {
+        free(raiz->dados);
+    }
+    
+    // Libera o nó
+    free(raiz);
+}
+
 int comparar_nomes(void *a, void *b, int tipo) {
     char *nome_a, *nome_b;
     
