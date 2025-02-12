@@ -3,65 +3,75 @@
 #include <string.h>
 #include "estruturas.h"
 
-void salvar_registro(Registro *reg) {
-    char filename[MAX_CAMPO + 4]; // +4 para ".bin"
-    sprintf(filename, "%s.bin", reg->tabela);
+// Salva um registro no arquivo binário
+void salvar_registro(const char *tabela, Registro *reg) {
+    char filename[100]; // Nome do arquivo
+    sprintf(filename, "%s.bin", tabela);
     
     FILE *f = fopen(filename, "ab");
     if (f) {
-        // Primeiro salva o número de campos
-        fwrite(&reg->num_campos, sizeof(int), 1, f);
-        
-        // Depois salva cada campo
-        for (int i = 0; i < reg->num_campos; i++) {
-            fwrite(&reg->campos[i], sizeof(Campo), 1, f);
-        }
-        
+        // Salva tamanho e dados
+        fwrite(&reg->tamanho, sizeof(int), 1, f);
+        fwrite(reg->dados, 1, reg->tamanho, f);
         fclose(f);
+        printf("Registro salvo em %s\n", filename);
+    } else {
+        printf("Erro ao abrir arquivo %s\n", filename);
     }
 }
 
+// Busca um registro no arquivo binário
 Registro* buscar_registro(const char *tabela, const char *campo, const char *valor) {
-    char filename[MAX_CAMPO + 4];
+    char filename[100];
     sprintf(filename, "%s.bin", tabela);
     
     FILE *f = fopen(filename, "rb");
-    if (!f) return NULL;
+    if (!f) {
+        printf("Arquivo %s não encontrado\n", filename);
+        return NULL;
+    }
     
     Registro *reg = NULL;
-    int num_campos;
+    int tamanho;
     
-    // Lê registros até encontrar um que corresponda
-    while (fread(&num_campos, sizeof(int), 1, f)) {
+    // Lê registros até encontrar o procurado
+    while (fread(&tamanho, sizeof(int), 1, f) == 1) {
         reg = malloc(sizeof(Registro));
-        strcpy(reg->tabela, tabela);
-        reg->num_campos = num_campos;
-        reg->campos = malloc(num_campos * sizeof(Campo));
+        reg->tamanho = tamanho;
+        reg->dados = malloc(tamanho);
         
-        // Lê todos os campos do registro
-        for (int i = 0; i < num_campos; i++) {
-            fread(&reg->campos[i], sizeof(Campo), 1, f);
-            
-            // Se encontrou o campo procurado e o valor corresponde
-            if (strcmp(reg->campos[i].nome, campo) == 0 && 
-                strcmp(reg->campos[i].valor, valor) == 0) {
-                fclose(f);
-                return reg;
-            }
-        }
+        fread(reg->dados, 1, tamanho, f);
         
-        // Se não encontrou, libera e continua procurando
-        liberar_registro(reg);
+        // Verifica se é o registro procurado
+        // TODO: implementar busca por campo/valor
+        
+        // Se não for o registro procurado, libera e continua
+        free(reg->dados);
+        free(reg);
         reg = NULL;
     }
     
     fclose(f);
-    return NULL;
+    return reg;
 }
 
+// Atualiza um registro no arquivo binário
+void atualizar_registro(const char *tabela, const char *campo, const char *valor, 
+                       const char *novo_campo, const char *novo_valor) {
+    // TODO: implementar atualização
+    printf("Atualização não implementada ainda\n");
+}
+
+// Remove um registro do arquivo binário (remoção lógica)
+void remover_registro(const char *tabela, const char *campo, const char *valor) {
+    // TODO: implementar remoção lógica
+    printf("Remoção não implementada ainda\n");
+}
+
+// Libera a memória de um registro
 void liberar_registro(Registro *reg) {
     if (reg) {
-        free(reg->campos);
+        if (reg->dados) free(reg->dados);
         free(reg);
     }
 }
