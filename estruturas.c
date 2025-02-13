@@ -315,15 +315,78 @@ void inserir_tipo_pet(NoArvore **raiz, TipoPet *t) {
     *raiz = inserir_no(*raiz, t, 3);
 }
 
+// Remove um nó da árvore
+NoArvore* remover_no(NoArvore *raiz, int codigo, int tipo) {
+    if (raiz == NULL) {
+        return NULL;
+    }
+    
+    int codigo_atual;
+    if (tipo == 1) {
+        codigo_atual = ((Pessoa*)raiz->dados)->codigo;
+    } else if (tipo == 2) {
+        codigo_atual = ((Pet*)raiz->dados)->codigo;
+    } else {
+        codigo_atual = ((TipoPet*)raiz->dados)->codigo;
+    }
+    
+    if (codigo < codigo_atual) {
+        raiz->esq = remover_no(raiz->esq, codigo, tipo);
+    }
+    else if (codigo > codigo_atual) {
+        raiz->dir = remover_no(raiz->dir, codigo, tipo);
+    }
+    else {
+        // Nó encontrado
+        if (raiz->esq == NULL && raiz->dir == NULL) {
+            // Caso 1: nó folha
+            free(raiz->dados);
+            free(raiz);
+            return NULL;
+        }
+        else if (raiz->esq == NULL) {
+            // Caso 2: apenas filho direito
+            NoArvore *temp = raiz->dir;
+            free(raiz->dados);
+            free(raiz);
+            return temp;
+        }
+        else if (raiz->dir == NULL) {
+            // Caso 2: apenas filho esquerdo
+            NoArvore *temp = raiz->esq;
+            free(raiz->dados);
+            free(raiz);
+            return temp;
+        }
+        else {
+            // Caso 3: dois filhos
+            NoArvore *sucessor = raiz->dir;
+            while (sucessor->esq != NULL) {
+                sucessor = sucessor->esq;
+            }
+            
+            // Copia os dados do sucessor
+            void *temp = raiz->dados;
+            raiz->dados = sucessor->dados;
+            sucessor->dados = temp;
+            
+            // Remove o sucessor
+            raiz->dir = remover_no(raiz->dir, codigo_atual, tipo);
+        }
+    }
+    return raiz;
+}
+
 // Funções para converter árvore em lista
-TipoPet* arvore_para_lista_tipos(NoArvore *raiz) {
+Pessoa* arvore_para_lista_pessoas(NoArvore *raiz) {
     if (raiz == NULL) return NULL;
     
     // Primeiro converte a subárvore esquerda
-    TipoPet *lista = arvore_para_lista_tipos(raiz->esq);
+    Pessoa *lista = arvore_para_lista_pessoas(raiz->esq);
     
-    // Adiciona o nó atual
-    TipoPet *atual = (TipoPet*)raiz->dados;
+    // Cria uma cópia do nó atual
+    Pessoa *atual = (Pessoa*)malloc(sizeof(Pessoa));
+    memcpy(atual, raiz->dados, sizeof(Pessoa));
     atual->prox = NULL;
     atual->ant = NULL;
     
@@ -333,7 +396,7 @@ TipoPet* arvore_para_lista_tipos(NoArvore *raiz) {
     }
     
     // Senão, encontra o último elemento e adiciona o atual
-    TipoPet *ultimo = lista;
+    Pessoa *ultimo = lista;
     while (ultimo->prox != NULL) {
         ultimo = ultimo->prox;
     }
@@ -341,7 +404,7 @@ TipoPet* arvore_para_lista_tipos(NoArvore *raiz) {
     atual->ant = ultimo;
     
     // Converte a subárvore direita e a conecta
-    TipoPet *direita = arvore_para_lista_tipos(raiz->dir);
+    Pessoa *direita = arvore_para_lista_pessoas(raiz->dir);
     if (direita != NULL) {
         atual->prox = direita;
         direita->ant = atual;
@@ -355,7 +418,9 @@ Pet* arvore_para_lista_pets(NoArvore *raiz) {
     
     Pet *lista = arvore_para_lista_pets(raiz->esq);
     
-    Pet *atual = (Pet*)raiz->dados;
+    // Cria uma cópia do nó atual
+    Pet *atual = (Pet*)malloc(sizeof(Pet));
+    memcpy(atual, raiz->dados, sizeof(Pet));
     atual->prox = NULL;
     atual->ant = NULL;
     
@@ -379,12 +444,14 @@ Pet* arvore_para_lista_pets(NoArvore *raiz) {
     return lista;
 }
 
-Pessoa* arvore_para_lista_pessoas(NoArvore *raiz) {
+TipoPet* arvore_para_lista_tipos(NoArvore *raiz) {
     if (raiz == NULL) return NULL;
     
-    Pessoa *lista = arvore_para_lista_pessoas(raiz->esq);
+    TipoPet *lista = arvore_para_lista_tipos(raiz->esq);
     
-    Pessoa *atual = (Pessoa*)raiz->dados;
+    // Cria uma cópia do nó atual
+    TipoPet *atual = (TipoPet*)malloc(sizeof(TipoPet));
+    memcpy(atual, raiz->dados, sizeof(TipoPet));
     atual->prox = NULL;
     atual->ant = NULL;
     
@@ -392,14 +459,14 @@ Pessoa* arvore_para_lista_pessoas(NoArvore *raiz) {
         return atual;
     }
     
-    Pessoa *ultimo = lista;
+    TipoPet *ultimo = lista;
     while (ultimo->prox != NULL) {
         ultimo = ultimo->prox;
     }
     ultimo->prox = atual;
     atual->ant = ultimo;
     
-    Pessoa *direita = arvore_para_lista_pessoas(raiz->dir);
+    TipoPet *direita = arvore_para_lista_tipos(raiz->dir);
     if (direita != NULL) {
         atual->prox = direita;
         direita->ant = atual;

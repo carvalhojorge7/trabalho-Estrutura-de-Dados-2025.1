@@ -103,16 +103,57 @@ int main() {
             } else {
                 exibir_arvore_ordenada(arvore_tipos, 3);
             }
+        } else if (strncasecmp(cmd->comando, "DELETE", 6) == 0) {
+            int codigo = extrair_id(cmd->comando);
+            arvore_tipos = remover_no(arvore_tipos, codigo, 3);
+            // Atualiza o arquivo com a nova árvore
+            TipoPet *lista_temp = arvore_para_lista_tipos(arvore_tipos);
+            salvar_tipos(lista_temp);
+            // Libera a lista temporária
+            while (lista_temp) {
+                TipoPet *prox = lista_temp->prox;
+                free(lista_temp);
+                lista_temp = prox;
+            }
+        } else if (strncasecmp(cmd->comando, "UPDATE", 6) == 0) {
+            char campo[50], valor[100];
+            int codigo = extrair_id(cmd->comando);
+            if (extrair_campo_valor(cmd->comando, campo, valor)) {
+                NoArvore *no = arvore_tipos;
+                while (no) {
+                    TipoPet *t = (TipoPet*)no->dados;
+                    if (t->codigo == codigo) {
+                        if (strcmp(campo, "nome") == 0) {
+                            strcpy(t->nome, valor);
+                        }
+                        // Atualiza o arquivo
+                        TipoPet *lista_temp = arvore_para_lista_tipos(arvore_tipos);
+                        salvar_tipos(lista_temp);
+                        // Libera a lista temporária
+                        while (lista_temp) {
+                            TipoPet *prox = lista_temp->prox;
+                            free(lista_temp);
+                            lista_temp = prox;
+                        }
+                        break;
+                    }
+                    if (codigo < t->codigo) {
+                        no = no->esq;
+                    } else {
+                        no = no->dir;
+                    }
+                }
+            }
         } else {
             TipoPet *lista_temp = NULL;
             processar_comando_tipo_pet(cmd->comando, &lista_temp);
             if (lista_temp) {
-                TipoPet *t = lista_temp;
-                while (t) {
-                    TipoPet *prox = t->prox;
-                    t->prox = t->ant = NULL;
-                    inserir_tipo_pet(&arvore_tipos, t);
-                    t = prox;
+                TipoPet *tipo = lista_temp;
+                while (tipo) {
+                    TipoPet *prox = tipo->prox;
+                    tipo->prox = tipo->ant = NULL;
+                    inserir_tipo_pet(&arvore_tipos, tipo);
+                    tipo = prox;
                 }
             }
         }
@@ -128,6 +169,53 @@ int main() {
                 printf("Nenhuma pessoa cadastrada.\n");
             } else {
                 exibir_arvore_ordenada(arvore_pessoas, 1);
+            }
+        } else if (strncasecmp(cmd->comando, "DELETE", 6) == 0) {
+            int codigo = extrair_id(cmd->comando);
+            arvore_pessoas = remover_no(arvore_pessoas, codigo, 1);
+            // Atualiza o arquivo com a nova árvore
+            Pessoa *lista_temp = arvore_para_lista_pessoas(arvore_pessoas);
+            salvar_pessoas(lista_temp);
+            // Libera a lista temporária
+            while (lista_temp) {
+                Pessoa *prox = lista_temp->prox;
+                free(lista_temp);
+                lista_temp = prox;
+            }
+        } else if (strncasecmp(cmd->comando, "UPDATE", 6) == 0) {
+            char campo[50], valor[100];
+            int codigo = extrair_id(cmd->comando);
+            if (extrair_campo_valor(cmd->comando, campo, valor)) {
+                NoArvore *no = arvore_pessoas;
+                while (no) {
+                    Pessoa *p = (Pessoa*)no->dados;
+                    if (p->codigo == codigo) {
+                        if (strcmp(campo, "nome") == 0) {
+                            strcpy(p->nome, valor);
+                        } else if (strcmp(campo, "fone") == 0) {
+                            strcpy(p->fone, valor);
+                        } else if (strcmp(campo, "endereco") == 0) {
+                            strcpy(p->endereco, valor);
+                        } else if (strcmp(campo, "data_nasc") == 0) {
+                            strcpy(p->data_nasc, valor);
+                        }
+                        // Atualiza o arquivo
+                        Pessoa *lista_temp = arvore_para_lista_pessoas(arvore_pessoas);
+                        salvar_pessoas(lista_temp);
+                        // Libera a lista temporária
+                        while (lista_temp) {
+                            Pessoa *prox = lista_temp->prox;
+                            free(lista_temp);
+                            lista_temp = prox;
+                        }
+                        break;
+                    }
+                    if (codigo < p->codigo) {
+                        no = no->esq;
+                    } else {
+                        no = no->dir;
+                    }
+                }
             }
         } else {
             Pessoa *lista_temp = NULL;
@@ -155,6 +243,47 @@ int main() {
             } else {
                 exibir_arvore_ordenada(arvore_pets, 2);
             }
+        } else if (strncasecmp(cmd->comando, "DELETE", 6) == 0) {
+            int codigo = extrair_id(cmd->comando);
+            arvore_pets = remover_no(arvore_pets, codigo, 2);
+            // Atualiza o arquivo com a nova árvore
+            Pet *lista_temp = arvore_para_lista_pets(arvore_pets);
+            salvar_pets(lista_temp);
+            // Libera a lista temporária
+            while (lista_temp) {
+                Pet *prox = lista_temp->prox;
+                free(lista_temp);
+                lista_temp = prox;
+            }
+        } else if (strncasecmp(cmd->comando, "UPDATE", 6) == 0) {
+            char campo[50], valor[100];
+            int codigo = extrair_id(cmd->comando);
+            if (extrair_campo_valor(cmd->comando, campo, valor)) {
+                NoArvore *no = arvore_pets;
+                while (no) {
+                    Pet *p = (Pet*)no->dados;
+                    if (p->codigo == codigo) {
+                        if (strcmp(campo, "nome") == 0) {
+                            strcpy(p->nome, valor);
+                        }
+                        // Atualiza o arquivo
+                        Pet *lista_temp = arvore_para_lista_pets(arvore_pets);
+                        salvar_pets(lista_temp);
+                        // Libera a lista temporária
+                        while (lista_temp) {
+                            Pet *prox = lista_temp->prox;
+                            free(lista_temp);
+                            lista_temp = prox;
+                        }
+                        break;
+                    }
+                    if (codigo < p->codigo) {
+                        no = no->esq;
+                    } else {
+                        no = no->dir;
+                    }
+                }
+            }
         } else {
             Pet *lista_temp = NULL;
             Pessoa *pessoas_temp = arvore_para_lista_pessoas(arvore_pessoas);
@@ -169,8 +298,17 @@ int main() {
                     pet = prox;
                 }
             }
-            free(pessoas_temp);
-            free(tipos_temp);
+            // Libera as listas temporárias
+            while (pessoas_temp) {
+                Pessoa *prox = pessoas_temp->prox;
+                free(pessoas_temp);
+                pessoas_temp = prox;
+            }
+            while (tipos_temp) {
+                TipoPet *prox = tipos_temp->prox;
+                free(tipos_temp);
+                tipos_temp = prox;
+            }
         }
         printf("\n");
         free(cmd);

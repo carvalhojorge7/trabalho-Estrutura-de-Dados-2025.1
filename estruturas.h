@@ -80,6 +80,9 @@ void inserir_tipo_pet(NoArvore **raiz, TipoPet *t);
 void exibir_arvore_ordenada(NoArvore *raiz, int tipo);
 void exibir_dados(void *dados, int tipo);
 
+// Remove um nó da árvore
+NoArvore* remover_no(NoArvore *raiz, int codigo, int tipo);
+
 // Funções para árvore binária
 NoArvore* criar_arvore();
 void liberar_arvore(NoArvore *raiz, int liberar_dados);

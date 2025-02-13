@@ -1,17 +1,17 @@
 # Primeiro vamos inserir alguns tipos de pet
-INSERT INTO tipo_pet (codigo=1, nome=Cachorro);
-INSERT INTO tipo_pet (codigo=2, nome=Gato);
-INSERT INTO tipo_pet (codigo=3, nome=Peixe);
-INSERT INTO tipo_pet (codigo=4, nome=Ave);
+INSERT INTO tipo_pet (codigo=1, nome=Dog);
+INSERT INTO tipo_pet (codigo=2, nome=Cat);
+INSERT INTO tipo_pet (codigo=3, nome=Fish);
+INSERT INTO tipo_pet (codigo=4, nome=Bird);
 
 # Listar tipos de pet ordenados por nome
 SELECT * FROM tipo_pet ORDER BY nome;
 
 # Agora vamos inserir algumas pessoas
-INSERT INTO pessoas (codigo=1, nome=Carlos Silva, fone=(85)99999-9999, endereco=Rua A, 123, data_nasc=15/03/1998);
-INSERT INTO pessoas (codigo=2, nome=Ana Maria, fone=(85)88888-8888, endereco=Av B, 456, data_nasc=22/07/1995);
-INSERT INTO pessoas (codigo=3, nome=Bruno Costa, fone=(85)77777-7777, endereco=Rua C, 789, data_nasc=10/12/1997);
-INSERT INTO pessoas (codigo=4, nome=Diana Santos, fone=(85)66666-6666, endereco=Av D, 321, data_nasc=05/09/2000);
+INSERT INTO pessoas (codigo=1, nome=Carlos Santos, fone=(85)99999-9999, endereco=Rua A 123, data_nasc=15/03/1998);
+INSERT INTO pessoas (codigo=2, nome=Ana Silva, fone=(85)88888-8888, endereco=Av B 456, data_nasc=22/07/1995);
+INSERT INTO pessoas (codigo=3, nome=Bruno Costa, fone=(85)77777-7777, endereco=Rua C 789, data_nasc=10/12/1997);
+INSERT INTO pessoas (codigo=4, nome=Diana Lima, fone=(85)66666-6666, endereco=Av D 321, data_nasc=05/09/2000);
 
 # Listar pessoas ordenadas por nome
 SELECT * FROM pessoas ORDER BY nome;
@@ -27,7 +27,7 @@ INSERT INTO pet (codigo=5, nome=Max, codigo_tipo=1, codigo_pes=1);
 SELECT * FROM pet ORDER BY nome;
 
 # Testar atualizações
-UPDATE pessoas SET endereco=Av B, 789 WHERE codigo=2;
+UPDATE pessoas SET endereco='Av B 789' WHERE codigo=2;
 UPDATE pet SET nome=Maxx WHERE codigo=5;
 
 # Listar novamente para ver as alterações

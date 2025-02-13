@@ -78,10 +78,10 @@ char *extrair_campo(const char *comando, const char *campo) {
 // Extrai campo e valor de um comando UPDATE
 int extrair_campo_valor(const char *comando, char *campo, char *valor) {
     const char *set = strcasestr(comando, "SET");
-    if (!set) return -1;
+    if (!set) return 0;
     
     const char *where = strcasestr(comando, "WHERE");
-    if (!where) return -1;
+    if (!where) return 0;
     
     // Pula o SET e espaços
     set += 3;
@@ -89,30 +89,49 @@ int extrair_campo_valor(const char *comando, char *campo, char *valor) {
     
     // Copia o campo até o =
     const char *igual = strchr(set, '=');
-    if (!igual) return -1;
+    if (!igual) return 0;
     
-    strncpy(campo, set, igual - set);
-    campo[igual - set] = '\0';
-    
+    int campo_len = igual - set;
+    // Remove espaços do início do campo
+    while (campo_len > 0 && *set == ' ') {
+        set++;
+        campo_len--;
+    }
     // Remove espaços do final do campo
-    char *fim = campo + strlen(campo) - 1;
-    while (fim > campo && *fim == ' ') fim--;
-    *(fim + 1) = '\0';
+    while (campo_len > 0 && *(set + campo_len - 1) == ' ') {
+        campo_len--;
+    }
+    strncpy(campo, set, campo_len);
+    campo[campo_len] = '\0';
     
     // Pula o = e espaços
     igual++;
     while (*igual == ' ') igual++;
     
-    // Copia o valor até o WHERE
-    strncpy(valor, igual, where - igual);
-    valor[where - igual] = '\0';
+    // Se o valor começa com aspas simples, procura o fechamento
+    if (*igual == '\'') {
+        igual++;  // Pula a aspas de abertura
+        const char *fim_valor = strchr(igual, '\'');
+        if (!fim_valor || fim_valor >= where) return 0;
+        strncpy(valor, igual, fim_valor - igual);
+        valor[fim_valor - igual] = '\0';
+    } else {
+        // Copia o valor até o WHERE
+        int valor_len = where - igual;
+        // Remove espaços do início do valor
+        while (valor_len > 0 && *igual == ' ') {
+            igual++;
+            valor_len--;
+        }
+        // Remove espaços do final do valor
+        while (valor_len > 0 && *(igual + valor_len - 1) == ' ') {
+            valor_len--;
+        }
+        strncpy(valor, igual, valor_len);
+        valor[valor_len] = '\0';
+    }
     
-    // Remove espaços do final do valor
-    fim = valor + strlen(valor) - 1;
-    while (fim > valor && *fim == ' ') fim--;
-    *(fim + 1) = '\0';
-    
-    return 0;
+    return 1;
 }
 
 // Função auxiliar para comparação case-insensitive
@@ -498,7 +517,7 @@ void processar_update(const char *comando, void **lista, int tipo) {
     }
     
     // Extrai o campo e valor
-    if (extrair_campo_valor(comando, campo, valor) != 0) {
+    if (extrair_campo_valor(comando, campo, valor) != 1) {
         printf("ERRO: Formato invalido no comando UPDATE\n");
         return;
     }
