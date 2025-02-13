@@ -34,15 +34,45 @@ int main() {
     Fila *fila_pets = criar_fila();
     Fila *fila_tipos = criar_fila();
     
-    // Criar listas duplamente encadeadas
-    Pessoa *lista_pessoas = criar_lista_pessoas();
-    TipoPet *lista_tipos = criar_lista_tipos();
-    Pet *lista_pets = criar_lista_pets();
+    // Criar árvores vazias
+    NoArvore *arvore_pessoas = NULL;
+    NoArvore *arvore_tipos = NULL;
+    NoArvore *arvore_pets = NULL;
     
-    // Carregar dados dos arquivos
+    // Criar listas temporárias para carregar os dados
+    Pessoa *lista_pessoas = NULL;
+    TipoPet *lista_tipos = NULL;
+    Pet *lista_pets = NULL;
+    
+    // Carregar dados dos arquivos para as listas
     carregar_pessoas(&lista_pessoas);
     carregar_tipos(&lista_tipos);
     carregar_pets(&lista_pets);
+    
+    // Converter listas para árvores
+    Pessoa *p = lista_pessoas;
+    while (p) {
+        Pessoa *prox = p->prox;
+        p->prox = p->ant = NULL;
+        inserir_pessoa(&arvore_pessoas, p);
+        p = prox;
+    }
+    
+    TipoPet *t = lista_tipos;
+    while (t) {
+        TipoPet *prox = t->prox;
+        t->prox = t->ant = NULL;
+        inserir_tipo_pet(&arvore_tipos, t);
+        t = prox;
+    }
+    
+    Pet *pet = lista_pets;
+    while (pet) {
+        Pet *prox = pet->prox;
+        pet->prox = pet->ant = NULL;
+        inserir_pet(&arvore_pets, pet);
+        pet = prox;
+    }
     
     // Lê os comandos do arquivo
     char linha[MAX_COMANDO];
@@ -58,37 +88,80 @@ int main() {
     printf("\n=== Separando comandos por tipo ===\n\n");
     separar_comandos(comandos, fila_pessoas, fila_pets, fila_tipos);
 
-    // Processa os comandos
+    // Processar comandos por tipo
     NoComando *cmd;
     
     printf("\n=== Processando comandos para TIPO_PET ===\n\n");
     while ((cmd = remover_comando(fila_tipos)) != NULL) {
         printf("Executando: %s\n", cmd->comando);
-        processar_comando_tipo_pet(cmd->comando, &lista_tipos);
+        TipoPet *lista_temp = NULL;
+        processar_comando_tipo_pet(cmd->comando, &lista_temp);
+        if (lista_temp) {
+            TipoPet *t = lista_temp;
+            while (t) {
+                TipoPet *prox = t->prox;
+                t->prox = t->ant = NULL;
+                inserir_tipo_pet(&arvore_tipos, t);
+                t = prox;
+            }
+        }
         printf("\n");
         free(cmd);
     }
-
+    
     printf("\n=== Processando comandos para PESSOAS ===\n\n");
     while ((cmd = remover_comando(fila_pessoas)) != NULL) {
         printf("Executando: %s\n", cmd->comando);
-        processar_comando_pessoa(cmd->comando, &lista_pessoas);
+        Pessoa *lista_temp = NULL;
+        processar_comando_pessoa(cmd->comando, &lista_temp);
+        if (lista_temp) {
+            Pessoa *p = lista_temp;
+            while (p) {
+                Pessoa *prox = p->prox;
+                p->prox = p->ant = NULL;
+                inserir_pessoa(&arvore_pessoas, p);
+                p = prox;
+            }
+        }
         printf("\n");
         free(cmd);
     }
-
+    
     printf("\n=== Processando comandos para PET ===\n\n");
     while ((cmd = remover_comando(fila_pets)) != NULL) {
         printf("Executando: %s\n", cmd->comando);
-        processar_comando_pet(cmd->comando, &lista_pets, lista_pessoas, lista_tipos);
+        Pet *lista_temp = NULL;
+        Pessoa *pessoas_temp = arvore_para_lista_pessoas(arvore_pessoas);
+        TipoPet *tipos_temp = arvore_para_lista_tipos(arvore_tipos);
+        processar_comando_pet(cmd->comando, &lista_temp, pessoas_temp, tipos_temp);
+        if (lista_temp) {
+            Pet *pet = lista_temp;
+            while (pet) {
+                Pet *prox = pet->prox;
+                pet->prox = pet->ant = NULL;
+                inserir_pet(&arvore_pets, pet);
+                pet = prox;
+            }
+        }
+        free(pessoas_temp);
+        free(tipos_temp);
         printf("\n");
         free(cmd);
     }
 
     // Salvar alterações nos arquivos
-    salvar_pessoas(lista_pessoas);
-    salvar_tipos(lista_tipos);
-    salvar_pets(lista_pets);
+    Pessoa *pessoas_para_salvar = arvore_para_lista_pessoas(arvore_pessoas);
+    TipoPet *tipos_para_salvar = arvore_para_lista_tipos(arvore_tipos);
+    Pet *pets_para_salvar = arvore_para_lista_pets(arvore_pets);
+    
+    salvar_pessoas(pessoas_para_salvar);
+    salvar_tipos(tipos_para_salvar);
+    salvar_pets(pets_para_salvar);
+    
+    // Liberar as listas temporárias
+    free(pessoas_para_salvar);
+    free(tipos_para_salvar);
+    free(pets_para_salvar);
     
     // Libera a memória
     liberar_fila(comandos);
@@ -99,24 +172,10 @@ int main() {
     // Fecha o arquivo
     fclose(arquivo);
 
-    // Liberar listas encadeadas
-    while (lista_pessoas) {
-        Pessoa *p = lista_pessoas;
-        lista_pessoas = lista_pessoas->prox;
-        free(p);
-    }
-    
-    while (lista_tipos) {
-        TipoPet *t = lista_tipos;
-        lista_tipos = lista_tipos->prox;
-        free(t);
-    }
-    
-    while (lista_pets) {
-        Pet *p = lista_pets;
-        lista_pets = lista_pets->prox;
-        free(p);
-    }
+    // Liberar árvores
+    liberar_arvore(arvore_pessoas, 1);
+    liberar_arvore(arvore_tipos, 1);
+    liberar_arvore(arvore_pets, 1);
 
     printf("\nProcessamento concluido!\n");
     printf("Pressione qualquer tecla para sair...");

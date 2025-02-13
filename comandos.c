@@ -47,7 +47,22 @@ char *extrair_campo(const char *comando, const char *campo) {
             }
         }
         
-        // Caso contrário, copia até a vírgula ou parêntese
+        // Se o valor começa com parênteses, procura o fechamento
+        if (*inicio == '(') {
+            const char *fim = strchr(inicio, ')');
+            if (fim) {
+                // Se há mais conteúdo após o parêntese (como em (85)99999-9999)
+                if (*(fim + 1) != ',' && *(fim + 1) != ';') {
+                    fim = strpbrk(fim, ",;");
+                    if (!fim) fim = inicio + strlen(inicio);
+                }
+                strncpy(valor, inicio, fim - inicio);
+                valor[fim - inicio] = '\0';
+                return valor;
+            }
+        }
+        
+        // Caso contrário, copia até a vírgula ou parêntese de fechamento
         const char *fim = strpbrk(inicio, ",);");
         if (fim) {
             strncpy(valor, inicio, fim - inicio);
