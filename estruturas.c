@@ -291,54 +291,12 @@ void exibir_dados(void *dados, int tipo) {
 }
 
 void exibir_arvore_ordenada(NoArvore *raiz, int tipo) {
-    static int *codigos_exibidos = NULL;
-    static int num_exibidos = 0;
-    static int capacidade = 0;
-    
     if (raiz == NULL) {
-        // Limpa o array quando terminar de exibir a árvore inteira
-        if (codigos_exibidos) {
-            free(codigos_exibidos);
-            codigos_exibidos = NULL;
-            num_exibidos = 0;
-            capacidade = 0;
-        }
         return;
     }
     
-    if (!codigos_exibidos) {
-        capacidade = 100;
-        codigos_exibidos = (int*)malloc(capacidade * sizeof(int));
-        num_exibidos = 0;
-    }
-    
     exibir_arvore_ordenada(raiz->esq, tipo);
-    
-    // Verifica se o código já foi exibido
-    int codigo;
-    if (tipo == 1) {
-        codigo = ((Pessoa*)raiz->dados)->codigo;
-    } else if (tipo == 2) {
-        codigo = ((Pet*)raiz->dados)->codigo;
-    } else {
-        codigo = ((TipoPet*)raiz->dados)->codigo;
-    }
-    
-    int ja_exibido = 0;
-    for (int i = 0; i < num_exibidos; i++) {
-        if (codigos_exibidos[i] == codigo) {
-            ja_exibido = 1;
-            break;
-        }
-    }
-    
-    if (!ja_exibido) {
-        exibir_dados(raiz->dados, tipo);
-        if (num_exibidos < capacidade) {
-            codigos_exibidos[num_exibidos++] = codigo;
-        }
-    }
-    
+    exibir_dados(raiz->dados, tipo);
     exibir_arvore_ordenada(raiz->dir, tipo);
 }
 

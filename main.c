@@ -49,7 +49,7 @@ int main() {
     carregar_tipos(&lista_tipos);
     carregar_pets(&lista_pets);
     
-    // Converter listas para árvores
+    // Converter listas para árvores e liberar as listas
     Pessoa *p = lista_pessoas;
     while (p) {
         Pessoa *prox = p->prox;
@@ -57,6 +57,7 @@ int main() {
         inserir_pessoa(&arvore_pessoas, p);
         p = prox;
     }
+    lista_pessoas = NULL;  // Lista foi convertida para árvore
     
     TipoPet *t = lista_tipos;
     while (t) {
@@ -65,6 +66,7 @@ int main() {
         inserir_tipo_pet(&arvore_tipos, t);
         t = prox;
     }
+    lista_tipos = NULL;  // Lista foi convertida para árvore
     
     Pet *pet = lista_pets;
     while (pet) {
@@ -73,6 +75,7 @@ int main() {
         inserir_pet(&arvore_pets, pet);
         pet = prox;
     }
+    lista_pets = NULL;  // Lista foi convertida para árvore
     
     // Lê os comandos do arquivo
     char linha[MAX_COMANDO];
@@ -94,15 +97,23 @@ int main() {
     printf("\n=== Processando comandos para TIPO_PET ===\n\n");
     while ((cmd = remover_comando(fila_tipos)) != NULL) {
         printf("Executando: %s\n", cmd->comando);
-        TipoPet *lista_temp = NULL;
-        processar_comando_tipo_pet(cmd->comando, &lista_temp);
-        if (lista_temp) {
-            TipoPet *t = lista_temp;
-            while (t) {
-                TipoPet *prox = t->prox;
-                t->prox = t->ant = NULL;
-                inserir_tipo_pet(&arvore_tipos, t);
-                t = prox;
+        if (strncasecmp(cmd->comando, "SELECT", 6) == 0) {
+            if (arvore_tipos == NULL) {
+                printf("Nenhum tipo de pet cadastrado.\n");
+            } else {
+                exibir_arvore_ordenada(arvore_tipos, 3);
+            }
+        } else {
+            TipoPet *lista_temp = NULL;
+            processar_comando_tipo_pet(cmd->comando, &lista_temp);
+            if (lista_temp) {
+                TipoPet *t = lista_temp;
+                while (t) {
+                    TipoPet *prox = t->prox;
+                    t->prox = t->ant = NULL;
+                    inserir_tipo_pet(&arvore_tipos, t);
+                    t = prox;
+                }
             }
         }
         printf("\n");
@@ -112,15 +123,23 @@ int main() {
     printf("\n=== Processando comandos para PESSOAS ===\n\n");
     while ((cmd = remover_comando(fila_pessoas)) != NULL) {
         printf("Executando: %s\n", cmd->comando);
-        Pessoa *lista_temp = NULL;
-        processar_comando_pessoa(cmd->comando, &lista_temp);
-        if (lista_temp) {
-            Pessoa *p = lista_temp;
-            while (p) {
-                Pessoa *prox = p->prox;
-                p->prox = p->ant = NULL;
-                inserir_pessoa(&arvore_pessoas, p);
-                p = prox;
+        if (strncasecmp(cmd->comando, "SELECT", 6) == 0) {
+            if (arvore_pessoas == NULL) {
+                printf("Nenhuma pessoa cadastrada.\n");
+            } else {
+                exibir_arvore_ordenada(arvore_pessoas, 1);
+            }
+        } else {
+            Pessoa *lista_temp = NULL;
+            processar_comando_pessoa(cmd->comando, &lista_temp);
+            if (lista_temp) {
+                Pessoa *p = lista_temp;
+                while (p) {
+                    Pessoa *prox = p->prox;
+                    p->prox = p->ant = NULL;
+                    inserir_pessoa(&arvore_pessoas, p);
+                    p = prox;
+                }
             }
         }
         printf("\n");
@@ -130,21 +149,29 @@ int main() {
     printf("\n=== Processando comandos para PET ===\n\n");
     while ((cmd = remover_comando(fila_pets)) != NULL) {
         printf("Executando: %s\n", cmd->comando);
-        Pet *lista_temp = NULL;
-        Pessoa *pessoas_temp = arvore_para_lista_pessoas(arvore_pessoas);
-        TipoPet *tipos_temp = arvore_para_lista_tipos(arvore_tipos);
-        processar_comando_pet(cmd->comando, &lista_temp, pessoas_temp, tipos_temp);
-        if (lista_temp) {
-            Pet *pet = lista_temp;
-            while (pet) {
-                Pet *prox = pet->prox;
-                pet->prox = pet->ant = NULL;
-                inserir_pet(&arvore_pets, pet);
-                pet = prox;
+        if (strncasecmp(cmd->comando, "SELECT", 6) == 0) {
+            if (arvore_pets == NULL) {
+                printf("Nenhum pet cadastrado.\n");
+            } else {
+                exibir_arvore_ordenada(arvore_pets, 2);
             }
+        } else {
+            Pet *lista_temp = NULL;
+            Pessoa *pessoas_temp = arvore_para_lista_pessoas(arvore_pessoas);
+            TipoPet *tipos_temp = arvore_para_lista_tipos(arvore_tipos);
+            processar_comando_pet(cmd->comando, &lista_temp, pessoas_temp, tipos_temp);
+            if (lista_temp) {
+                Pet *pet = lista_temp;
+                while (pet) {
+                    Pet *prox = pet->prox;
+                    pet->prox = pet->ant = NULL;
+                    inserir_pet(&arvore_pets, pet);
+                    pet = prox;
+                }
+            }
+            free(pessoas_temp);
+            free(tipos_temp);
         }
-        free(pessoas_temp);
-        free(tipos_temp);
         printf("\n");
         free(cmd);
     }
