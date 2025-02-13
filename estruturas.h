@@ -84,4 +84,9 @@ void exibir_dados(void *dados, int tipo);
 NoArvore* criar_arvore();
 void liberar_arvore(NoArvore *raiz, int liberar_dados);
 
+// Funções para converter árvore em lista
+TipoPet* arvore_para_lista_tipos(NoArvore *raiz);
+Pet* arvore_para_lista_pets(NoArvore *raiz);
+Pessoa* arvore_para_lista_pessoas(NoArvore *raiz);
+
 #endif

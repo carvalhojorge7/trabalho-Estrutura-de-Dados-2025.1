@@ -356,3 +356,96 @@ void inserir_pet(NoArvore **raiz, Pet *p) {
 void inserir_tipo_pet(NoArvore **raiz, TipoPet *t) {
     *raiz = inserir_no(*raiz, t, 3);
 }
+
+// Funções para converter árvore em lista
+TipoPet* arvore_para_lista_tipos(NoArvore *raiz) {
+    if (raiz == NULL) return NULL;
+    
+    // Primeiro converte a subárvore esquerda
+    TipoPet *lista = arvore_para_lista_tipos(raiz->esq);
+    
+    // Adiciona o nó atual
+    TipoPet *atual = (TipoPet*)raiz->dados;
+    atual->prox = NULL;
+    atual->ant = NULL;
+    
+    // Se a lista está vazia, retorna o nó atual
+    if (lista == NULL) {
+        return atual;
+    }
+    
+    // Senão, encontra o último elemento e adiciona o atual
+    TipoPet *ultimo = lista;
+    while (ultimo->prox != NULL) {
+        ultimo = ultimo->prox;
+    }
+    ultimo->prox = atual;
+    atual->ant = ultimo;
+    
+    // Converte a subárvore direita e a conecta
+    TipoPet *direita = arvore_para_lista_tipos(raiz->dir);
+    if (direita != NULL) {
+        atual->prox = direita;
+        direita->ant = atual;
+    }
+    
+    return lista;
+}
+
+Pet* arvore_para_lista_pets(NoArvore *raiz) {
+    if (raiz == NULL) return NULL;
+    
+    Pet *lista = arvore_para_lista_pets(raiz->esq);
+    
+    Pet *atual = (Pet*)raiz->dados;
+    atual->prox = NULL;
+    atual->ant = NULL;
+    
+    if (lista == NULL) {
+        return atual;
+    }
+    
+    Pet *ultimo = lista;
+    while (ultimo->prox != NULL) {
+        ultimo = ultimo->prox;
+    }
+    ultimo->prox = atual;
+    atual->ant = ultimo;
+    
+    Pet *direita = arvore_para_lista_pets(raiz->dir);
+    if (direita != NULL) {
+        atual->prox = direita;
+        direita->ant = atual;
+    }
+    
+    return lista;
+}
+
+Pessoa* arvore_para_lista_pessoas(NoArvore *raiz) {
+    if (raiz == NULL) return NULL;
+    
+    Pessoa *lista = arvore_para_lista_pessoas(raiz->esq);
+    
+    Pessoa *atual = (Pessoa*)raiz->dados;
+    atual->prox = NULL;
+    atual->ant = NULL;
+    
+    if (lista == NULL) {
+        return atual;
+    }
+    
+    Pessoa *ultimo = lista;
+    while (ultimo->prox != NULL) {
+        ultimo = ultimo->prox;
+    }
+    ultimo->prox = atual;
+    atual->ant = ultimo;
+    
+    Pessoa *direita = arvore_para_lista_pessoas(raiz->dir);
+    if (direita != NULL) {
+        atual->prox = direita;
+        direita->ant = atual;
+    }
+    
+    return lista;
+}

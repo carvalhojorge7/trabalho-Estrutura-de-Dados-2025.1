@@ -203,7 +203,7 @@ void processar_comando_pessoa(const char *comando, Pessoa **lista) {
             
             // Inserir todos na árvore
             while (p) {
-                inserir_na_arvore(&arvore, p, 1);
+                inserir_pessoa(&arvore, p);
                 p = p->prox;
             }
             
@@ -295,7 +295,7 @@ void processar_comando_tipo_pet(const char *comando, TipoPet **lista) {
             
             // Inserir todos na árvore
             while (t) {
-                inserir_na_arvore(&arvore, t, 3);
+                inserir_tipo_pet(&arvore, t);
                 t = t->prox;
             }
             
@@ -416,7 +416,7 @@ void processar_comando_pet(const char *comando, Pet **lista, Pessoa *lista_pesso
             
             // Inserir todos na árvore
             while (p) {
-                inserir_na_arvore(&arvore, p, 2);
+                inserir_pet(&arvore, p);
                 p = p->prox;
             }
             
@@ -554,15 +554,16 @@ void processar_update(const char *comando, void **lista, int tipo) {
 void processar_insert_pessoa(const char *comando, NoArvore **raiz) {
     Pessoa *p = extrair_dados_pessoa(comando);
     if (p != NULL) {
-        // Verifica se já existe uma pessoa com o mesmo código
-        if (buscar_pessoa(*raiz, p->codigo) != NULL) {
+        Pessoa *lista_temp = arvore_para_lista_pessoas(*raiz);
+        if (buscar_pessoa(lista_temp, p->codigo) != NULL) {
             printf("ERRO: Ja existe uma pessoa com o codigo %d\n", p->codigo);
             free(p);
             return;
         }
         inserir_pessoa(raiz, p);
         printf("Pessoa inserida com sucesso!\n");
-        salvar_pessoas(*raiz);
+        lista_temp = arvore_para_lista_pessoas(*raiz);
+        salvar_pessoas(lista_temp);
     }
 }
 
@@ -571,20 +572,24 @@ void processar_insert_pet(const char *comando, NoArvore **raiz, NoArvore *pessoa
     Pet *p = extrair_dados_pet(comando);
     if (p != NULL) {
         // Verifica se já existe um pet com o mesmo código
-        if (buscar_pet(*raiz, p->codigo) != NULL) {
+        Pet *lista_temp = arvore_para_lista_pets(*raiz);
+        if (buscar_pet(lista_temp, p->codigo) != NULL) {
             printf("ERRO: Ja existe um pet com o codigo %d\n", p->codigo);
             free(p);
             return;
         }
         // Verifica se a pessoa existe
-        if (buscar_pessoa(pessoas, p->codigo_pes) == NULL) {
+        Pessoa *lista_pessoas_temp = arvore_para_lista_pessoas(pessoas);
+        if (buscar_pessoa(lista_pessoas_temp, p->codigo_pes) == NULL) {
             printf("ERRO: Pessoa com codigo %d nao encontrada\n", p->codigo_pes);
             free(p);
             return;
         }
         inserir_pet(raiz, p);
         printf("Pet inserido com sucesso!\n");
-        salvar_pets(*raiz);
+        // Converte a árvore em uma lista e salva
+        lista_temp = arvore_para_lista_pets(*raiz);
+        salvar_pets(lista_temp);
     }
 }
 
@@ -593,13 +598,43 @@ void processar_insert_tipo_pet(const char *comando, NoArvore **raiz) {
     TipoPet *t = extrair_dados_tipo_pet(comando);
     if (t != NULL) {
         // Verifica se já existe um tipo de pet com o mesmo código
-        if (buscar_tipo_pet(*raiz, t->codigo) != NULL) {
+        TipoPet *lista_temp = arvore_para_lista_tipos(*raiz);
+        if (buscar_tipo_pet(lista_temp, t->codigo) != NULL) {
             printf("ERRO: Ja existe um tipo de pet com o codigo %d\n", t->codigo);
             free(t);
             return;
         }
         inserir_tipo_pet(raiz, t);
         printf("Tipo de pet inserido com sucesso!\n");
-        salvar_tipos(*raiz);
+        // Converte a árvore em uma lista e salva
+        lista_temp = arvore_para_lista_tipos(*raiz);
+        salvar_tipos(lista_temp);
     }
+}
+
+// Funções para extrair dados dos comandos
+Pessoa *extrair_dados_pessoa(const char *comando) {
+    Pessoa *p = (Pessoa*)malloc(sizeof(Pessoa));
+    p->codigo = extrair_id(comando);
+    strcpy(p->nome, extrair_campo(comando, "nome"));
+    strcpy(p->fone, extrair_campo(comando, "fone"));
+    strcpy(p->endereco, extrair_campo(comando, "endereco"));
+    strcpy(p->data_nasc, extrair_campo(comando, "data_nasc"));
+    return p;
+}
+
+Pet *extrair_dados_pet(const char *comando) {
+    Pet *p = (Pet*)malloc(sizeof(Pet));
+    p->codigo = extrair_id(comando);
+    strcpy(p->nome, extrair_campo(comando, "nome"));
+    p->codigo_tipo = extrair_id_ref(comando, "codigo_tipo");
+    p->codigo_pes = extrair_id_ref(comando, "codigo_pes");
+    return p;
+}
+
+TipoPet *extrair_dados_tipo_pet(const char *comando) {
+    TipoPet *t = (TipoPet*)malloc(sizeof(TipoPet));
+    t->codigo = extrair_id(comando);
+    strcpy(t->nome, extrair_campo(comando, "nome"));
+    return t;
 }

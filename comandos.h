@@ -30,4 +30,9 @@ TipoPet *buscar_tipo_pet(TipoPet *lista, int codigo);
 // Função auxiliar para comparação case-insensitive
 char *strcasestr(const char *haystack, const char *needle);
 
+// Funções para extrair dados
+Pessoa *extrair_dados_pessoa(const char *comando);
+Pet *extrair_dados_pet(const char *comando);
+TipoPet *extrair_dados_tipo_pet(const char *comando);
+
 #endif
